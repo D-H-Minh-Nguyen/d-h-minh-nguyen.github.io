@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>D.-H.-Minh Nguyen | Personal & Research Website</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f8f9fa;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --accent: #0f4c81;
+      --accent-hover: #0a355c;
+      --border: #e5e7eb;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover {
+      color: var(--accent-hover);
+      text-decoration: underline;
+    }
+
+    /* Navigation */
+    header {
+      border-bottom: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.95);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav-container {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .site-title {
+      font-weight: 700;
+      font-size: 1.15rem;
+      color: var(--text);
+    }
+
+    .site-title:hover {
+      text-decoration: none;
+    }
+
+    nav a {
+      margin-left: 1.5rem;
+      font-size: 0.95rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    nav a:hover {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    /* Main Container */
+    main {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem;
+    }
+
+    section {
+      margin-bottom: 3.5rem;
+    }
+
+    h2 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 2px solid var(--border);
+      color: var(--text);
+    }
+
+    /* Profile / Hero Section */
+    .profile {
+      display: flex;
+      gap: 2.5rem;
+      align-items: flex-start;
+    }
+
+    .profile-text {
+      flex: 1;
+    }
+
+    .profile-text h1 {
+      font-size: 2.1rem;
+      line-height: 1.2;
+      margin-bottom: 0.35rem;
+    }
+
+    .subtitle {
+      font-size: 1.05rem;
+      color: var(--muted);
+      margin-bottom: 1.25rem;
+    }
+
+    .profile-text p {
+      margin-bottom: 1rem;
+    }
+
+    .social-links {
+      margin-top: 1.25rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .social-links a {
+      padding: 0.35rem 0.85rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.9rem;
+      background: var(--surface);
+      transition: border-color 0.2s;
+    }
+
+    .social-links a:hover {
+      border-color: var(--accent);
+      text-decoration: none;
+    }
+
+    .profile-photo {
+      width: 210px;
+      flex-shrink: 0;
+      text-align: center;
+    }
+
+    .profile-photo img {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background-color: var(--surface);
+    }
+
+    /* News / Updates Feed */
+    .news-list {
+      list-style: none;
+    }
+
+    .news-list li {
+      display: flex;
+      gap: 1.25rem;
+      padding: 0.65rem 0;
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    .news-date {
+      font-weight: 600;
+      color: var(--muted);
+      min-width: 95px;
+      font-size: 0.92rem;
+    }
+
+    /* Publications / Projects */
+    .item-card {
+      padding: 1.15rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      background: var(--bg);
+    }
+
+    .item-title {
+      font-weight: 600;
+      font-size: 1.05rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .item-meta {
+      font-size: 0.92rem;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .item-links a {
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-right: 1rem;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem 1.5rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    /* Responsive Mobile Layout */
+    @media (max-width: 700px) {
+      .profile {
+        flex-direction: column-reverse;
+        align-items: center;
+        text-align: left;
+      }
+      .profile-photo {
+        width: 160px;
+      }
+      .news-list li {
+        flex-direction: column;
+        gap: 0.2rem;
+      }
+      nav a {
+        margin-left: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="nav-container">
+      <a href="#" class="site-title">Your Name</a>
+      <nav>
+        <a href="#about">About</a>
+        <a href="#news">News</a>
+        <a href="#projects">Projects</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero / Bio Section -->
+    <section id="about" class="profile">
+      <div class="profile-text">
+        <h1>Your Full Name</h1>
+        <div class="subtitle">Title / Role &bull; Institution or Company</div>
+        <p>
+          Welcome to my personal website. I am a [your role, e.g., software engineer / researcher / Ph.D. student]
+          working on [core topics, e.g., distributed systems, machine learning, and web technologies].
+        </p>
+        <p>
+          Previously, I completed my degree at [University Name], where I focused on [brief background].
+          Feel free to explore my recent projects, publications, and open-source repositories below.
+        </p>
+        <div class="social-links">
+          <a href="mailto:you@example.com">Email</a>
+          <a href="https://github.com/your-username" target="_blank">GitHub</a>
+          <a href="https://linkedin.com" target="_blank">LinkedIn</a>
+          <a href="#" target="_blank">CV / Resume</a>
+        </div>
+      </div>
+
+      <div class="profile-photo">
+        <!-- Replace src with your own photo filename, e.g., "avatar.jpg" -->
+        <img src="https://via.placeholder.com/300x300.png?text=Your+Photo" alt="Profile Photo" />
+      </div>
+    </section>
+
+    <!-- News / Announcements -->
+    <section id="news">
+      <h2>News &amp; Updates</h2>
+      <ul class="news-list">
+        <li>
+          <span class="news-date">Nov 2026</span>
+          <span>Launched the new version of my personal website on GitHub Pages.</span>
+        </li>
+        <li>
+          <span class="news-date">Sep 2026</span>
+          <span>Released an open-source toolkit for [Project Name] on GitHub.</span>
+        </li>
+        <li>
+          <span class="news-date">Jun 2026</span>
+          <span>Joined [Organization / Lab] as a [Role].</span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- Selected Projects / Publications -->
+    <section id="projects">
+      <h2>Selected Projects &amp; Publications</h2>
+
+      <div class="item-card">
+        <div class="item-title">Project or Paper Title One</div>
+        <div class="item-meta"><strong>Your Name</strong>, Co-author Name &bull; <em>Conference / Journal / Stack, 2026</em></div>
+        <p style="font-size: 0.95rem; margin-bottom: 0.5rem;">
+          A concise 1–2 sentence summary explaining the problem solved, the methodology used, and the key outcome.
+        </p>
+        <div class="item-links">
+          <a href="#">[Code]</a>
+          <a href="#">[Demo]</a>
+          <a href="#">[Paper / Docs]</a>
+        </div>
+      </div>
+
+      <div class="item-card">
+        <div class="item-title">Project or Paper Title Two</div>
+        <div class="item-meta"><strong>Your Name</strong> &bull; <em>Open Source Repository, 2025</em></div>
+        <p style="font-size: 0.95rem; margin-bottom: 0.5rem;">
+          A short description of another flagship project, research work, or engineering system you built.
+        </p>
+        <div class="item-links">
+          <a href="#">[GitHub]</a>
+          <a href="#">[Live Site]</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact -->
+    <section id="contact">
+      <h2>Contact</h2>
+      <p>
+        <strong>Email:</strong> <a href="mailto:you@example.com">you@example.com</a><br />
+        <strong>Location:</strong> Your City, Country
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    &copy; 2026 Your Name. Hosted on GitHub Pages.
+  </footer>
+
+</body>
+</html>

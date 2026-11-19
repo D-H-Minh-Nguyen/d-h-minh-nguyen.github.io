@@ -1,0 +1,562 @@
+\documentclass[a4paper,12pts,dvipsnames]{article}
+\usepackage[margin=1.5cm,includefoot,footskip=30pt]{geometry}
+\usepackage{layout}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{graphicx}
+\numberwithin{equation}{section}
+\usepackage{mdframed}
+\usepackage[english]{babel}
+\usepackage{color}
+\usepackage{tikz}
+\usetikzlibrary{decorations.pathmorphing,patterns}
+\usepackage{gensymb}
+\usepackage{fancybox,xcolor}
+\usepackage{empheq}
+\usepackage{braket}
+\usepackage{tocloft,ragged2e,hyperref,glossaries}%generate list of equations
+
+%%%%%%% Create a boxed equation: %%%%%%%% start
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\newlength\mytemplen
+\newsavebox\mytempbox
+
+\makeatletter
+\newcommand\codegraybox{%
+	\@ifnextchar[%]
+	{\@codegraybox}%
+	{\@codegraybox[0pt]}}
+
+\def\@codegraybox[#1]{%
+	\@ifnextchar[%]
+	{\@@codegraybox[#1]}%
+	{\@@codegraybox[#1][0pt]}}
+
+\def\@@codegraybox[#1][#2]#3{
+	\sbox\mytempbox{#3}%
+	\mytemplen\ht\mytempbox
+	\advance\mytemplen #1\relax
+	\ht\mytempbox\mytemplen
+	\mytemplen\dp\mytempbox
+	\advance\mytemplen #2\relax
+	\dp\mytempbox\mytemplen
+	\colorbox{backcolour}{\hspace{1em}\usebox{\mytempbox}\hspace{1em}}}
+
+\makeatother
+%%%%%%%%%%%%% stop
+
+%%%%%%%%% To create note boxes: %%%%%%%%%%start here
+\usepackage[many]{tcolorbox}
+\usepackage{wrapfig}
+\usepackage{lipsum}
+
+\newtcolorbox{story}[1][]{
+	width=\textwidth,
+	fonttitle=\bfseries,
+	breakable,
+	fonttitle=\bfseries\color{Brown},
+	colframe=white,%melon
+	colback=white%melon!10
+	#1}
+
+\newcounter{mynote}
+\newtcolorbox[use counter=mynote]
+{mynote}[1][]
+{title=Note~\thetcbcounter,
+	width=6cm,
+	left=0pt,
+	right=0pt,
+	fonttitle=\bfseries,
+	coltitle=black,
+	colframe=ForestGreen!40,
+	colback=ForestGreen!10,
+	#1
+}    
+
+\newcommand\StoryNote[3][]{%
+	\begin{wrapfigure}{r}{4cm}
+		\begin{mynote}[label=#3]
+			#2
+		\end{mynote}%
+	\end{wrapfigure}%
+}
+%%%%%%%%%%% stop here
+
+%%%%%%%% generate list of equations
+\newcommand{\listequationsname}{List of Equations}
+\newlistof{myequations}{equ}{\listequationsname}
+\newcommand{\myequations}[1]{%
+	\addcontentsline{equ}{myequations}{\protect\numberline{\theequation}#1}\par}
+\setlength{\cftmyequationsnumwidth}{2.5em}% Width of equation number in List of Equations
+\setlength{\cftmyequationsindent}{1.5em}
+
+% command to box, label, reference, and 
+% include noteworthy equation in list of equations
+\newcommand{\formula}[2]{
+	\begin{empheq}[box={\codegraybox[5pt]}]{align} \label{#2} \ensuremath{#1} \end{empheq} 
+	\myequations{#2} \centering \small \textit{#2} \normalsize \justify }
+\newcommand{\boxequation}[2]{
+	\begin{align} \label{#2} \ensuremath{\boxed{#1}} \end{align} 
+	\myequations{#2} \centering \small \textit{#2} \normalsize \justify }
+%%%%%%%%%%%%%%%%%
+
+\renewcommand\appendix{\par
+	\setcounter{section}{0}
+	\setcounter{subsection}{0}
+	\setcounter{figure}{0}
+	\setcounter{table}{0}
+	\renewcommand\thesection{Appendix \Alph{section}}
+	\renewcommand\thefigure{\Alph{section}\arabic{figure}}
+	\renewcommand\thetable{\Alph{section}\arabic{table}}
+}
+\hypersetup{
+	colorlinks,
+	linkcolor={green!50!blue},
+	citecolor={blue!50!red},
+	urlcolor={blue!80!black}
+}
+
+\begin{document}
+	%\selectlanguage{vietnam}
+	\title{\textbf{Linear Response Theory}\vspace{-2ex}}
+	\author{Nguyen Duy Hoang Minh}
+	\date{\vspace{-2ex}}
+	\maketitle
+	
+	\tableofcontents
+
+\section{Thermal expectation values - Density matrix}
+\subsection{Density matrix - pure versus mixed states}
+A solid which consists of many particles is not a simple system and cannot be prepared in a well defined quantum state. Instead, being a thermodynamic system, the solid can be prepared in a state characterized by a set of thermodynamic variables such as temperature $T$, particle number $N$, and volume $V$.\\
+These thermodynamic quantities specify the state of solid as a statistical ensemble of quantum mechanical microstates $$\left\lbrace(p_i|\ket{i}), i = \overline{1,N}: T,N,\cdots\text{ fixed}\right\rbrace.$$
+\begin{itemize}
+	\item The system is prepared in state $\ket{i}$ with probability $p_i$: $\displaystyle\sum_{i}p_i=1$.
+	\item In general, the states $\ket{i}$ are not orthogonal, e.g. $\ket{i}$ maybe not an eigenstate but a superposition of states.
+\end{itemize}
+If all but one of $p_i$ are zero, the solid is said to be in a \textbf{pure state}; otherwise it is in a \textbf{mixed state}.\\
+The experimental value for a observable $\hat{\mathcal{A}}$ is described by the thermal expectation value (or ensemble mean value)
+\begin{align}
+\braket{\hat{\mathcal{A}}} = \sum_{i}p_i\braket{i|\hat{\mathcal{A}}|i} = \sum_{i,m}p_i\braket{i|m}\braket{m|\hat{\mathcal{A}}|i} = \sum_{i,m}\braket{m|\hat{\mathcal{A}}p_i|i}\braket{i|m} = \sum_m \braket{m|\hat{\mathcal{A}}\hat{\rho}|m} = \text{Tr}[\hat{\rho}\hat{\mathcal{A}}]
+\end{align}
+with the \textbf{statistical density matrix} of the system defined as
+\begin{equation}
+\hat{\rho} = \sum_i p_i\ket{i}\bra{i}.
+\end{equation}
+Here, $\ket{m}$ are basis states of the multiparticle Hilbert space. Some important properties of $\hat{\rho}$:
+\begin{itemize}
+	\item Hermitian: $\hat{\rho}^{\dagger}=\hat{\rho}$
+	\item Positive semi-definite: $\braket{\psi|\hat{\rho}|\psi} = \displaystyle\sum_ip_i|\braket{\psi|i}|^2\ge 0$ for arbitrary state $\psi$
+	\item Normalized: $\text{Tr}\hat{\rho} = 1$
+	\begin{equation*}
+	\text{Tr}(\hat{\rho}^2) \left\lbrace\begin{array}{rcl}
+	=1 && \text{pure state} \\ <1 && \text{mixed state}
+	\end{array}\right. .
+	\end{equation*}
+\end{itemize}
+\textit{Notice that} in second quantization formalism, one has
+\begin{equation}
+	\boxed{\braket{\hat{\mathcal{A}}} = \sum_{\alpha,\beta}\braket{\alpha|\hat{A}|\beta}\braket{a^{\dagger}_{\alpha}a_{\beta}} = \sum_{\alpha,\beta}\braket{\alpha|\hat{A}|\beta}\text{Tr}\left(\rho a^{\dagger}_{\alpha}a_{\beta}\right)},
+\end{equation}
+where $\ket{\alpha}$, $\ket{\beta}$ and $\hat{A}$ are single-particle states and operator\footnote{Notice that creation and annihilation operators live in the total Fock space as the statistical density operator does.}. This formula shows that the thermal expectation value of quantity $A$ depends on particles' distributions and polarizations.
+\begin{mdframed}[backgroundcolor=gray!16]
+	\textbf{Proving the latter property:}\\
+	Notice that the states $\ket{i}$ are normalized, one has
+	\begin{equation}
+		\text{Tr}\hat{\rho} = \sum_{m}\braket{m|\hat{\rho}|m} = \sum_{i}p_i\braket{i|i} = \sum_ip_i = 1.
+	\end{equation}
+	If the system is in a pure state, $\hat{\rho}^2=\hat{\rho}$ and consequently $\text{Tr}(\hat{\rho}^2)=1$. Otherwise, one has
+	\begin{align}
+		\text{Tr}(\hat{\rho}^2) = \text{Tr}\left[\sum_{i,j}p_ip_j\ket{i}\braket{i|j}\bra{j}\right] = \sum_{i,j}p_ip_j\braket{i|j}\text{Tr}\left[\ket{i}\bra{j}\right] = \sum_{i,j}p_ip_j\braket{i|j}\sum_m\braket{m|i}\braket{j|m} = \sum_{i,j}p_ip_j|\braket{i|j}|^2.
+	\end{align}
+	Using the Cauchy - Schwarz inequality $|\braket{i|j}|^2\le\braket{i|i}\braket{j|j}=1$, one obtains $\text{Tr}(\hat{\rho}^2)\le1$. It can be verified that the equality holds if and only if the system is in a pure state.
+\end{mdframed}
+The density operator maybe expressed in terms of its matrix elements in a given basis, i.e. $\hat{\rho} = \displaystyle\sum_{m,n}\rho_{mn}\ket{m}\bra{n}$, where $\rho_{mn} = \braket{m|\hat{\rho}|n}$ is usually referred to as the density matrix of the system.
+
+Dynamics of density operator is governed by the Liouville equation
+\begin{equation}
+i\hbar\frac{\partial\hat{\rho}}{\partial t} = [\hat{H},\hat{\rho}].
+\end{equation}
+In thermal equilibrium, $\dfrac{\partial\hat{\rho}}{\partial t} = 0$. In the representation of eigenstates of Hamiltonian $\hat{H}$, the statistical operator which commutes with $\hat{H}$ is diagonal.
+
+\textbf{Some important statistical ensemble:}
+\begin{itemize}
+	\item The canonical ensemble  ($NVT$)with fixed temperature $T$ and particle number $N$:
+	\begin{equation}
+	\hat{\rho} = \frac{1}{Z}e^{-\beta\hat{H}}
+	\end{equation}
+	with the canonical partition function $Z=\text{Tr}\left(e^{-\beta\hat{H}}\right)$.
+	\item The grand canonical ensemble ($\mu VT$) with fixed temperature $T$ and variable particle number $N$:
+	\begin{equation}
+	\hat{\rho}_G = \frac{1}{Z_G}e^{-\beta(\hat{H}-\mu\hat{N})}
+	\end{equation}
+	with the grand canonical partition function $Z_G = \text{Tr}\left(e^{-\beta(\hat{H}-\mu\hat{N})}\right)$, where $\hat{N}$ is the particle number operator and $\mu$ the chemical potential.
+\end{itemize}
+\begin{mdframed}[backgroundcolor=gray!18]
+	\textbf{Time evolution in different quantum pictures:}\\
+	One now digresses a bit to discuss the density operator in Schr\"{o}dinger and Heisenberg pictures. Since the Liouville equation is different from Heisenberg equation, it brings up a question: is the time evolution of a physical quantity invariant in different quantum picture?\\
+	To answer this plainly, one considers:
+	\begin{itemize}
+		\item \textbf{Heisenberg picture:} since the state vectors are time independent, the statistical operator does not vary in time. On the other hand, the operator's evolution is governed by Heisenberg equation
+		\begin{equation*}
+			\frac{d}{dt}\braket{\hat{\mathcal{A}}} = \sum_ip_i\braket{i|\frac{d\hat{\mathcal{A}}}{dt}|i} = \sum_ip_i\braket{i|\frac{i}{\hbar}[\hat{H},\hat{\mathcal{A}}]|i} = \frac{i}{\hbar}\text{Tr}\left(\rho[\hat{H},\hat{\mathcal{A}}]\right) = \frac{i}{\hbar}\braket{[\hat{H},\hat{\mathcal{A}}]}.
+		\end{equation*}
+		\item \textbf{Schr\"{o}dinger picture:} now state vectors evolve in time according to Schr\"{o}dinger equation $i\hbar d\ket{i}/dt = H\ket{i}$. One has
+		\begin{equation*}
+		\frac{d}{dt}\braket{\hat{\mathcal{A}}} = \sum_ip_i\left[\left(\frac{d}{dt}\bra{i}\right)\hat{\mathcal{A}}\ket{i} + \bra{i}\hat{\mathcal{A}}\left(\frac{d}{dt}\ket{i}\right)\right] = \sum_ip_i\braket{i|\frac{i}{\hbar}[\hat{H},\hat{\mathcal{A}}]|i} = \frac{i}{\hbar}\text{Tr}\left(\rho[\hat{H},\hat{\mathcal{A}}]\right) = \frac{i}{\hbar}\braket{[\hat{H},\hat{\mathcal{A}}]}.
+		\end{equation*}
+	\end{itemize}
+	In other words, when changing between quantum pictures, one applies a unitary transformation $$\ket{i}\rightarrow U^{\dagger}\ket{i}$$ $$\mathcal{A}\rightarrow U^{\dagger}\mathcal{A}U$$
+	which indicates that $\rho\rightarrow U\rho U^{\dagger}$. Consequently, the expectation value of quantity $\mathcal{A}$ is given by
+	\begin{equation*}
+		\braket{\mathcal{A}(t)} = \text{Tr}\left[\mathcal{A}(0)\rho(t)\right] = \text{Tr}\left[\mathcal{A}(0)U\rho(0)U^{\dagger}\right] = \text{Tr}\left[\mathcal{A}(t)\rho(0)\right].
+	\end{equation*}
+\end{mdframed}
+\subsection{Stern-Gerlach experiment}
+To distinguish the concepts of pure and mixed states, one takes the Stern-Gerlach experiment as an example. \\
+\textbf{Description of SG experiment}: Silver atoms are heated in an oven and gain kinetic energy. The oven has a small hole through which the silver atoms escape and form a beam. This beam goes through a collimator\footnote{A collimator is a device that narrows a beam of particles or waves.} and then an inhomogeneous magnetic field which varies considerably along the $z$-direction. This magnetic field split the beam into two distinct components: $S_z$ up and $S_z$ down. Here, the beam is an ensemble consisting of identically prepared physical systems which are silver atoms.\\
+On symmetry ground, one expects that the atoms have arbitrary spin orientation when emanating from the oven. If all the silver atoms are in a pure state $\ket{\alpha}=c_+\ket{z+}+c_-\ket{z-}$, their spins point in some definite direction since the ket state $\ket{\alpha}$ can be written as - for example,
+\begin{equation}
+	\ket{\alpha} = \cos\frac{\theta}{2}\ket{z+} + e^{i\phi}\sin\frac{\theta}{2}\ket{z-}.
+\end{equation}
+To obtain 50\% $S_z$ up atoms and 50\% $S_z$ down atoms after the measurement\footnote{The wavefunctions collapse into one of the two eigenstates.}, the original beam should have spin in the $xy$ plane. This restriction of direction contradicts the assumption on random spin orientation. On the other hand, if the initial beam is an ensemble of silver atoms in which 50\% of the atoms are characterized by $\ket{z+}$ and the remaining 50\% by $\ket{z-}$, the beam is unpolarized.\\
+To end this discussion, one computes the density matrices in two cases:
+\subsubsection*{Pure state}
+When all the silver atoms are in the same state $\ket{\alpha} = \dfrac{1}{\sqrt{2}}\begin{pmatrix} 1 \\ e^{i\phi} \end{pmatrix}$, the density matrix is given by
+\begin{equation}
+	\hat{\rho}_{\text{pure}} = \ket{\alpha}\bra{\alpha} = \frac{1}{2}\begin{pmatrix} 1 \\ e^{i\phi} \end{pmatrix}\begin{pmatrix} 1 & e^{-i\phi} \end{pmatrix} = \frac{1}{2}\begin{pmatrix} 1 & e^{-i\phi} \\ e^{i\phi} & 1 \end{pmatrix}.
+\end{equation}
+\subsubsection*{Mixed state}
+When 50\% of the atoms are in state $\ket{z+}$ and 50\% in state $\ket{z-}$, the density matrix is written as
+\begin{equation}
+	\hat{\rho}_{\text{mixed}} = \frac{1}{2}\ket{z+}\bra{z+} + \frac{1}{2}\ket{z-}\bra{z-} = \frac{1}{4}\begin{pmatrix} 1 & 0 \\ 0 & 1 \end{pmatrix}.
+\end{equation}
+The phase-dependence of $\hat{\rho}_{\text{pure}}$ opens another story about coherence and incoherence, in which one temporarily stops digging more.
+\subsection{Thermal distributions}
+For a grand canonical system of non-interacting identical particles (bosons or fermions), the Hamiltonian reads\footnote{One ignores the hat notation for operators from now on.}
+\begin{equation}
+H_0 = \sum_{q}\epsilon_qa^{\dagger}_qa_q,
+\end{equation}
+where $a^{\dagger}_q$ and $a_q$ are creation and annihilation operators, which follow the (anti)commutation relations:
+\begin{equation}
+	a_pa^{\dagger}_q - \zeta a^{\dagger}_qa_p = \delta_{p,q},\qquad a^{\dagger}_qa^{\dagger}_p - \zeta a^{\dagger}_pa^{\dagger}_q = 0,\qquad a_qa_p - \zeta a_pa_q = 0.
+\end{equation}
+Here $\zeta=+1$ for bosonic operators and $-1$ for fermionic ones. Making use of these commutators, one gets
+\begin{equation}
+[a^{\dagger}_ma_n,a_p] = -\delta_{m,p}a_{n},\qquad\qquad [a^{\dagger}_ma_n,a^{\dagger}_p] = \delta_{n,p}a^{\dagger}_{m}.
+\end{equation}
+Therefore, the commutators of Hamiltonian and creation/annihilation operator are
+\begin{equation}
+[H_0,a_m] = \sum_{q}\epsilon_q[a^{\dagger}_qa_q,a_m] = -\sum_{q}\epsilon_q\delta_{q,m}a_q = -\epsilon_ma_m,\qquad\qquad [H_0,a^{\dagger}_m] = \sum_{q}\epsilon_q[a^{\dagger}_qa_q,a^{\dagger}_m] = \sum_{q}\epsilon_q\delta_{q,m}a^{\dagger}_q = \epsilon_ma^{\dagger}_m.
+\end{equation}
+Similarly, for the total number of particles operator, one also has
+\begin{equation}
+[N,a_m] = \sum_{q}[a^{\dagger}_qa_q,a_m] = -\sum_{q}\delta_{q,m}a_q = -a_m,\qquad\qquad [N,a^{\dagger}_m] = \sum_{q}[a^{\dagger}_qa_q,a^{\dagger}_m] = \sum_{q}\delta_{q,m}a^{\dagger}_q = a^{\dagger}_m.
+\end{equation}
+\begin{story}
+	\StoryNote{For two operators $A$ and $B$, one has\begin{align}
+			&e^{tA}Be^{-tA}\nonumber\\ 
+			=& B + t[A,B] + \frac{t^2}{2!}[A,[A,B]] + \cdots\nonumber
+		\end{align}
+		For $[A,B] = \gamma B$
+		\begin{align}
+			e^{tA}Be^{-tA} = e^{t\gamma}B\nonumber\\
+			\Rightarrow e^{tA}B = e^{t\gamma}Be^{tA}\nonumber
+	\end{align}}{operators}
+	Applying the relations in note \ref{operators} one obtains
+	\begin{align}
+		e^{-\beta H_0}a^{\dagger}_m = e^{-\beta\epsilon_m}a^{\dagger}_me^{-\beta H_0},&\qquad e^{-\beta H_0}a_n = e^{\beta\epsilon_n}a_ne^{-\beta H_0},\\
+		e^{\beta\mu N}a^{\dagger}_m = e^{\beta\mu}a^{\dagger}_me^{\beta\mu N},&\qquad e^{\beta\mu N}a_n = e^{-\beta\mu}a_ne^{\beta\mu N}.
+	\end{align}
+	The thermal expectation value of particle density operator is
+	\begin{align}
+		\braket{a^{\dagger}_qa_q} &= \text{Tr}(\rho a^{\dagger}_qa_q) = \frac{1}{Z_G}\text{Tr}\left[e^{-\beta(H_0-\mu N)}a^{\dagger}_qa_q\right]\nonumber\\
+		=& \frac{e^{-\beta(\epsilon_q-\mu)}}{Z_G}\text{Tr}\left[a^{\dagger}_qe^{-\beta(H_0-\mu N)}a_q\right] = e^{-\beta(\epsilon_q-\mu)}\braket{a_qa^{\dagger}_q}.
+	\end{align}
+	Combining the latter expression with the (anti)commutation relation gives
+	\begin{equation}
+		\braket{a^{\dagger}_qa_q} = f(\epsilon_q) = \frac{1}{e^{\beta(\epsilon_q-\mu)}-\zeta},
+	\end{equation}
+\end{story}
+which is Bose-Einstein distribution for $\zeta=+1$ and Fermi-Dirac distribution for $\zeta=-1$. Although one has assumed this system of particles to be non-interacting, this result is general and also holds for interacting systems.
+\section{Theory of linear response}
+\subsection{Interaction picture}
+When one deals with systems whose Hamiltonian is time-independent, the temporal dynamics of a wavepacket can be developed through the time-evolution operator $U(t)=e^{-iHt/\hbar}$ or, when cast in terms of eigenstates of Hamiltonian, $H\ket{n}=E_n\ket{n}$, as $\ket{\psi(t)}=\sum_{n} e^{-iE_nt/\hbar}c_n(0)\ket{n}$. However, when one introduces a time-dependent external field to the system, it is more convenient and intuitive to work in the Dirac/interaction picture. In this subsection, one simply recalls some basic concepts of the interaction representation in order for applying it in the linear response theory.
+
+The formulas for switching from the Schr\"{o}dinger picture to the Dirac one are 
+\begin{eqnarray}
+	&\ket{\psi_D(t)} = e^{iH_0t/\hbar}\ket{\psi_S(t)},&\\ &A^{(D)}(t)=e^{iH_0t/\hbar}A^{(S)}e^{-iH_0t/\hbar}.&
+\end{eqnarray}
+Notice that $H_0$ is invariant under this transformation. The full Hamiltonian in the Dirac picture is written as
+\begin{equation}
+H^{(D)}(t) = H^{(D)}_0 + V^{(D)}_{\text{ext}}(t),
+\end{equation}
+with the unperturbed Hamiltonian $H^{(D)}_0 = H^{(S)}_0 (= H_0)$ and external field $V^{(D)}_{\text{ext}}(t) = e^{iH_0t/\hbar}V^{(S)}_{\text{ext}}e^{-iH_0t/\hbar}$.
+In this representation, both operators and states depend on time, and the equations governing their temporal evolution are given by
+\begin{eqnarray}
+	&i\hbar\dfrac{d}{dt}\ket{\psi_D(t)} = V_{\text{ext}}^{(D)}(t)\ket{\psi_D(t)},&\\
+	&i\hbar\dfrac{d}{dt}A^{(D)}(t) = \left[A^{(D)}(t),H_0\right].&
+\end{eqnarray}
+In addition, the Liouville equation, which describes how the statistical density operator changes in time, in the Dirac picture is given by
+\begin{equation}
+	i\hbar\frac{d}{dt}\rho^{(D)}(t) = \left[V^{(D)}_{\text{ext}}(t),\rho^{(D)}(t)\right].
+\end{equation}
+In the next subsection, one will determine the linear response of a solid to an external field by applying the time-dependent perturbation approximation in this interaction representation.
+\subsection{Linear response theory}
+One now applies a perturbation to the solid and examines its response to such an external field. The system including the solid itself and the external field is described by the Hamiltonian\footnote{Here, one is working in the Dirac representation.}
+\begin{equation}
+H(t) = H_0 + e^{\eta t}V_{\text{ext}}(t).\label{totalhamiltonian}
+\end{equation}
+One assumes that the solid is initially in a thermal equilibrium state $\rho(0)$ corresponding to the unperturbed Hamiltonian $H_0$, and the perturbation $V_{\text{ext}}(t)$ is switched on adiabatically from $t=-\infty$ to $t=0$. The adiabatic condition for turning on $V_{\text{ext}}(t)$ allows one to neglect the exact time dependence of the switch-on process and choose an arbitrary function to describe it. Here, we assume that the perturbation exponentially increases, and the parameter $\eta$, which tends to $0^+$, is introduced in order to ensure that $V_{\text{ext}}(t)$ vanishes when $t=-\infty$\footnote{Notice that the limit of $\eta$ is taken after taking the limit of $t$, i.e., $\lim\limits_{\eta\rightarrow0}\lim\limits_{t\rightarrow-\infty}\left[e^{\eta t}V_{\text{ext}}(t)\right]$.}. The perturbation can be generically written as
+\begin{equation}\label{interaction}
+V_{\text{ext}}(t) = -\vec{B}\cdot\vec{F}(t) = -\sum_{\alpha=x,y,z}B_{\alpha}F_{\alpha}(t),
+\end{equation}
+where $\vec{B}$ is an observable and $\vec{F}(t)$ is a vector function of time. In the Dirac representation, operators depend on time and thus we can work with $V_{\text{ext}}(t) =-\sum_{\alpha}B_{\alpha}(t)F_{\alpha}(t)$. The measure value of an observable $\vec{A}$ is determined by
+\begin{equation}
+\braket{A_{\alpha}(t)} = \text{Tr}[\rho(t)A_{\alpha}].
+\end{equation}
+It can be seen that the dependence on external field enters through the statistical operator, which contains the full Hamiltonian \ref{totalhamiltonian}. When the solid is in equilibrium, one has
+\begin{equation}
+[0,\rho_{eq}] = i\hbar\frac{\partial\rho_{eq}}{\partial t} = 0.
+\end{equation}
+When the perturbation is switched on
+\begin{equation}
+	\frac{\partial\rho}{\partial t} = -\frac{i}{\hbar}[e^{\eta t}V_{\text{ext}}(t),\rho(t)] \Rightarrow \rho(t) = \rho_{eq} + e^{\eta t}\Delta\rho(t),
+\end{equation}
+where
+\begin{equation}
+		\boxed{\Delta\rho(t) = \frac{1}{i\hbar}e^{-\eta t}\int^t_{-\infty}dt'[e^{\eta t'}V_{\text{ext}}(t'),\rho(t')].}\label{exactresponse}
+\end{equation}
+This is an exact result determining the variation of the density matrix with respect to the external field. Since one is only interested in the linear response of the system, one makes an approximation as
+\begin{equation}
+[e^{\eta t}V_{\text{ext}}(t),\rho(t)] = [e^{\eta t}V_{\text{ext}}(t),\rho_{eq}+e^{\eta t}\Delta\rho(t)] \approx [e^{\eta t}V_{\text{ext}}(t),\rho_{eq}].
+\end{equation}
+Here, one has neglected the second order of perturbation term $[e^{\eta t}V_{\text{ext}}(t),e^{\eta t}\Delta\rho(t)]$. Then, equation \ref{exactresponse} becomes
+\begin{equation}
+	\Delta\rho(t) = \frac{1}{i\hbar}\int^t_{-\infty}dt' e^{\eta(t-t')}[V_{\text{ext}}(t'),\rho_{eq}].
+\end{equation}
+The thermal expectation value of observable $\vec{A}$ is now written as
+\begin{align}
+\braket{A_{\alpha}(t)} = \text{Tr}\left\lbrace[\rho_{eq}+e^{\eta t}\Delta\rho(t)]A_{\alpha}(t)\right\rbrace = \underbrace{\text{Tr}\{\rho_{eq}A_{\alpha}\}}_{\braket{A_{\alpha}(0)}} + e^{\eta t}\underbrace{\text{Tr}\{\Delta\rho(t)A_{\alpha}(t)\}}_{\braket{\Delta A_{\alpha}(t)}}
+\end{align}
+with
+\begin{align}
+\braket{\Delta A_{\alpha}(t)} = \text{Tr}\left\lbrace\frac{1}{i\hbar}\int^t_{-\infty}dt' e^{\eta(t'-t)}[V_{\text{ext}}(t'),\rho_{eq}]A_{\alpha}(t)\right\rbrace .
+\end{align}
+Inserting the identity $A_{\alpha}(t) = e^{iH_0t/\hbar}A_{\alpha}(0)e^{-iH_0t/\hbar}$ into the latter equation gives
+\begin{equation}
+	\braket{\Delta A_{\alpha}(t)} = \text{Tr}\left\lbrace\frac{1}{i\hbar}\int^t_{-\infty}dt' e^{\eta(t'-t)}[V_{\text{ext}}(t'-t,t'),\rho_{eq}]A_{\alpha}(0)\right\rbrace .\label{response}
+\end{equation}
+\subsubsection{General expression}
+From equation \ref{response}, we have 
+\begin{align}
+\braket{\Delta A_{\alpha}(t)} &= -\frac{i}{\hbar}\int^t_{-\infty}dt' e^{\eta(t'-t)}\text{Tr}\left\lbrace[V_{\text{ext}}(t'-t,t'),\rho_{eq}]A_{\alpha}(0)\right\rbrace\\
+&= -\frac{i}{\hbar}\int^t_{-\infty}dt' e^{\eta(t'-t)}\text{Tr}\left\lbrace V_{\text{ext}}(t'-t,t')\rho_{eq}A_{\alpha}(0) - \rho_{eq}V_{\text{ext}}(t'-t,t')A_{\alpha}(0)\right\rbrace\\
+&= -\frac{i}{\hbar}\int^t_{-\infty}dt' e^{\eta(t'-t)}\text{Tr}\left\lbrace\rho_{eq} [A_{\alpha}(0),V_{\text{ext}}(t'-t,t')]\right\rbrace
+\end{align}
+Substituting the assumed form of $V_{\text{ext}}$ into the latter expression gives
+\begin{story}
+	\StoryNote{A property of correlation functions:\begin{align}
+			&\braket{[A_{\alpha}(t-t'),B_{\beta}(0)]}_{eq}\nonumber\\
+			=& \braket{[A_{\alpha}(t),B_{\beta}(t')]}_{eq}\nonumber\\
+			=& \braket{[A_{\alpha},B_{\beta}(t'-t)]}_{eq}\nonumber
+	\end{align}which can be proved using trace identities.}{correl}
+	\begin{align}
+	\braket{\Delta A_{\alpha}(t)} &= -\frac{i}{\hbar}\sum_{\beta}\int^t_{-\infty}dt' e^{\eta(t'-t)}\text{Tr}\left\lbrace\rho_{eq} [A_{\alpha}(0),-B_{\beta}(t'-t)F_{\beta}(t')]\right\rbrace\\
+	&= \frac{i}{\hbar}\sum_{\beta}\int^t_{-\infty}dt' e^{\eta(t'-t)}\text{Tr}\left\lbrace\rho_{eq} [A_{\alpha}(0),B_{\beta}(t'-t)]\right\rbrace F_{\beta}(t')\\
+	&= \frac{i}{\hbar}\sum_{\beta}\int^{t}_{-\infty}dt' e^{-\eta(t-t')}\braket{[A_{\alpha}(t-t'),B_{\beta}(0)]}_{eq} F_{\beta}(t').
+	\end{align}
+\end{story}
+In the last equality, one has used the property of correlation functions in note~\ref{correl}.\\
+Finally, one obtains
+\formula{\braket{A_{\alpha}(t)} = A_{\alpha}^{\text{eq}} + \frac{i}{\hbar}\sum_{\beta}\int^{t}_{-\infty}dt' e^{-\eta(t-t')}\braket{[A_{\alpha}(t-t'),B_{\beta}(0)]}_{eq} F_{\beta}(t').}{General Kubo formula}
+%\begin{empheq}[box={\codegraybox[5pt]}]{align}
+%\label{timedef}
+%\end{empheq}
+The response function is thus defined as
+\begin{equation}
+	R_{\alpha\beta}(t-t') = \frac{i}{\hbar} e^{-\eta(t-t')}\braket{[A_{\alpha}(t-t'),B_{\beta}(0)]}_{eq}.
+\end{equation}
+\begin{story}
+	\StoryNote{The linear response function $R_{\alpha\beta}(t,t') = \dfrac{i}{\hbar}\braket{\left[A_{\alpha}(t-t'),B_{\beta}(0)\right]}_{eq}$ is a correlation function of observables $\vec{A}$ and $\vec{B}$. In generalizing equation \ref{General Kubo formula} to include dependence of space variables, one may write
+		\begin{align}
+			\braket{\Delta A_{\alpha}(\vec{r},t)}&\nonumber \\
+			= \int^t_{-\infty}dt'&\int d^3r'R_{\alpha\beta}(\vec{r},t;\vec{r}',t')\nonumber \\
+			&\times F_{\beta}(\vec{r}',t').\nonumber
+		\end{align}
+	}{general}
+	\textbf{Ramble a bit:} for homogeneous systems, the response function depends on $\vec{r}-\vec{r}'$, and in case that the external perturbation is spatially harmonic, one has $\vec{F}(\vec{r},t) = \vec{F}_{\vec{q}}(t)e^{i\vec{q}\cdot\vec{r}}$. Then, applying note~\ref{general} gives
+	\begin{align}
+		\braket{\Delta A_{\alpha}(\vec{r},t)} &= \int^t_{-\infty}dt'\int d^3r'R_{\alpha\beta}(\vec{r}-\vec{r}',t,t')F_{\vec{q}\beta}(t')e^{i\vec{q}\cdot\vec{r}}\\
+		&= \int^t_{-\infty}dt'\mathcal{R}_{\alpha\beta}(\vec{q},t,t')F_{\vec{q}\beta}(t') \\
+		&= \braket{\Delta A_{\alpha}(\vec{q},t)}
+	\end{align}
+	with $\mathcal{R}_{\alpha\beta}(\vec{q},t,t')$ being the Fourier transform of $R_{\alpha\beta}(\vec{r}-\vec{r}',t,t')$.
+\end{story}
+\noindent Continue with equation \ref{General Kubo formula}, taking Fourier transform of $\braket{\Delta A_{\alpha}(t)}$ yields
+\begin{align}
+	\Delta A_{\alpha}(\omega) &= \int^{+\infty}_{-\infty}dte^{i\omega t}\braket{\Delta A_{\alpha}(t)}\nonumber \\ &= \int^{+\infty}_{-\infty}dte^{i\omega t}\frac{i}{\hbar}\sum_{\beta}\int^{+\infty}_{-\infty}dt' e^{-\eta(t-t')}\theta(t-t')\braket{[A_{\alpha}(t-t'),B_{\beta}(0)]}_{eq} F_{\beta}(t')\\
+	&= \frac{i}{\hbar}\sum_{\beta}\int^{+\infty}_{-\infty}dt\int^{+\infty}_{-\infty}dt' e^{i\omega(t-t')}e^{-\eta(t-t')}\theta(t-t')\braket{[A_{\alpha}(t-t'),B_{\beta}(0)]}_{eq} e^{i\omega t'}F_{\beta}(t')\\
+	&= \frac{i}{\hbar}\sum_{\beta}\int^{+\infty}_{-\infty}d\tau\int^{+\infty}_{-\infty}dt' e^{i\omega\tau}e^{-\eta\tau}\theta(\tau)\braket{[A_{\alpha}(\tau),B_{\beta}(0)]}_{eq} e^{i\omega t'}F_{\beta}(t'), \qquad\qquad \tau = t-t'
+\end{align}
+\begin{equation}
+	\Rightarrow\boxed{\Delta A_{\alpha}(\omega) = \sum_{\beta}\underbrace{\frac{i}{\hbar}\int^{+\infty}_{-\infty} d\tau e^{i\omega\tau}e^{-\eta\tau}\theta(\tau)\braket{[A_{\alpha}(\tau),B_{\beta}(0)]}_{eq}}_{\substack{\chi_{\alpha\beta}(\omega)\\ \text{response function/susceptibility}}}\underbrace{\int^{+\infty}_{-\infty}dt'e^{i\omega t'}F_{\beta}(t')}_{F_{\beta}(\omega)}.}
+\end{equation}
+This is simply the convolution theorem.\\
+\underline{Remark:} the response function is completely defined by the unperturbed system and thus describes a material property.
+\subsubsection{Canonical ensemble}
+One considers a somewhat more particular case - a system of electrons which is regarded as a canonical ensemble. Similar to the previous subsection, inserting the assumed form of $V_{\text{ext}}(t)$ into equation \ref{response} yields
+\begin{align}
+	\braket{\Delta A_{\alpha}(t)} = \sum_{\beta}\frac{i}{\hbar}\int^t_{-\infty}dt' e^{\eta(t'-t)}\text{Tr}\left\lbrace[B_{\beta}(t'-t),\rho_{eq}]A_{\alpha}(0)\right\rbrace F_{\beta}(t')\\
+	= \sum_{\beta}\frac{i}{\hbar}\int^0_{-\infty}dt'' e^{\eta t''}\text{Tr}\left\lbrace[B_{\beta}(t''),\rho_{eq}]A_{\alpha}(0)\right\rbrace F_{\beta}(t''+t)
+\end{align}
+with $t''=t'-t$. On the other hand, one has
+\begin{align}
+	[B(t),\rho_{eq}] = B(t)\rho_{eq} - \rho_{eq}B(t) &= \frac{e^{-\beta H_0}}{Z}e^{\beta H_0}B(t)e^{-\beta H_0} - \rho_{eq}B(t)\nonumber\\
+	=& \rho_{eq}\left[e^{\beta H_0}B(t)e^{-\beta H_0} - B(t)\right] = \rho_{eq}\left[B(t-i\hbar\beta) - B(t)\right]
+\end{align}
+and
+\begin{equation}
+	-i\hbar\int^{\beta}_0d\lambda\frac{\partial}{\partial t}B(t-i\hbar\lambda) = -i\hbar\int^{\beta}_0d\lambda\frac{\partial}{\partial(-i\hbar\lambda)}B(t-i\hbar\lambda) = B(t-i\hbar\beta) - B(t),
+\end{equation}
+which shows that
+\begin{equation}
+	[B(t),\rho_{eq}] = -i\hbar\rho_{eq}\int^{\beta}_0d\lambda\frac{\partial}{\partial t}B(t-i\hbar\lambda).
+\end{equation}
+Using this identity one gets
+\begin{align}
+	\braket{\Delta A_{\alpha}(t)} = \sum_{\beta}\int^0_{-\infty}dt'' e^{\eta t''}\text{Tr}\left\lbrace\rho_{eq}\int^{\beta}_0d\lambda\frac{\partial}{\partial t''}B(t''-i\hbar\lambda)A_{\alpha}(0)\right\rbrace F_{\beta}(t''+t).
+\end{align}
+Taking the integration over $\beta$ out, applying the cyclic property of trace, and changing variable $t''\rightarrow\tau = -t''$, one gets
+\begin{empheq}[box={\codegraybox[5pt]}]{align}
+	\braket{\Delta A_{\alpha}(t)} = \sum_{\beta}\int^{\infty}_0d\tau e^{-\eta\tau}\int^{\beta}_0d\lambda\text{Tr}\left\lbrace\rho_{eq}\frac{\partial}{\partial(-\tau)}B_{\beta}(-\tau)A_{\alpha}(i\hbar\lambda)\right\rbrace F_{\beta}(t-\tau)\label{kubo}
+\end{empheq}
+or
+\begin{equation}
+	\braket{\Delta A_{\alpha}(t)} = \sum_{\beta}\int^{\infty}_0d\tau e^{-\eta\tau}\int^{\beta}_0d\lambda\braket{D_{\beta}(0)A_{\alpha}(\tau+i\hbar\lambda)}_{eq} F_{\beta}(t-\tau)\label{canonicalkubo}
+\end{equation}
+with $D_{\beta}(t)=\dfrac{\partial}{\partial t}B_{\beta}(t)$. Both equation \ref{kubo} and \ref{General Kubo formula} are Kubo formulas describing the response of a canonical system of electrons to a perturbation $V_{\text{ext}}(t) = -\vec{B}\cdot\vec{F}(t)$.
+\subsubsection{Kubo formulas for non-interacting electrons}
+In many situations, the effects driven by electron-electron interaction are negligible compared to the effects of disorder. Consequently, in those cases, it would be more pragmatic to avoid using the general multiparticle Kubo formula. Instead, to simplify the problem, one will establish a Kubo formula for non-interacting particles.\\
+In the independent-particle approximation, the multiparticle Hamiltonian can be written as a sum of single-particle ones
+\begin{equation}
+	H_0 = \sum_{i=1}^Nh^{(i)}_0.
+\end{equation}
+Using a complete set of orthonormal eigenvectors $\{\ket{n}\}$ of operator $h^{(i)}_0$, $h^{(i)}_0\ket{n}=\epsilon_i\ket{n}$, one can represent mutiparticle operators $D_{\beta}(0)$ and $A_{\alpha}(\tau+i\hbar\lambda)$ in the second quantization formalism as
+\begin{align}
+	D_{\beta}(0) &= \sum_{m,n}\braket{m|d_{\beta}(0)|n} c^{\dagger}_mc_n,\\
+	A_{\alpha}(\tau+i\hbar\lambda) = \sum_{m',n'}\braket{m'|a_{\alpha}(\tau+i\hbar\lambda)|n'}& c^{\dagger}_{m'}c_{n'} = \sum_{m',n'}\braket{m'|a_{\alpha}(\tau)|n'} c^{\dagger}_{m'}c_{n'} \exp{\left[(\epsilon_{n'}-\epsilon_{m'})\lambda\right]}.
+\end{align}
+Here, $c^{\dagger}_n$ and $c_n$ are creation and annihilation operators of an electron, and $d_{\beta}$ and $a_{\alpha}$ are single-particle operators of observables $\vec{D}$ and $\vec{A}$, respectively. Then, one has
+\begin{align}
+	\braket{D_{\beta}(0)A_{\alpha}(\tau+i\hbar\lambda)}_{eq} = \sum_{m,n,m',n'}\braket{m|d_{\beta}(0)|n}\braket{m'|a_{\alpha}(\tau)|n'}\text{Tr}\{\rho_{eq}c^{\dagger}_mc_nc^{\dagger}_{m'}c_{n'}\}\exp{\left[(\epsilon_{n'}-\epsilon_{m'})\lambda\right]}.
+\end{align}
+Using the identity (which is proved below)
+\begin{equation}\label{bloch dominicis}
+	\text{Tr}\{\rho_{eq}c^{\dagger}_mc_nc^{\dagger}_{m'}c_{n'}\} = \frac{\delta_{m,n'}\delta_{m',n}}{1-e^{\beta\left(\epsilon_{n'}-\epsilon_{m'}\right)}}[f(\epsilon_{n'}) - f(\epsilon_{n})]
+\end{equation}
+one gets
+\begin{align}
+	\braket{D_{\beta}(0)A_{\alpha}(\tau+i\hbar\lambda)}_{eq} &= \sum_{m,n,m',n'}\braket{m|d_{\beta}(0)|n}\braket{m'|a_{\alpha}(\tau)|n'}\frac{\delta_{m,n'}\delta_{m',n}}{1-e^{\beta\left(\epsilon_{n'}-\epsilon_{m'}\right)}}[f(\epsilon_{n'}) - f(\epsilon_{n})]\exp{\left[(\epsilon_{n'}-\epsilon_{m'})\lambda\right]}\\
+	&= \sum_{m,n}\braket{m|d_{\beta}(0)|n}\braket{n|a_{\alpha}(\tau)|m}\frac{1}{1-e^{\beta\left(\epsilon_{m}-\epsilon_{n}\right)}}[f(\epsilon_{m}) - f(\epsilon_{n})]\exp{\left[(\epsilon_{m}-\epsilon_{n})\lambda\right]}.
+\end{align}
+Substituting the latter expression into the Kubo formula \ref{canonicalkubo}, expanding the time dependence in $a_{\alpha}(\tau)$ using the time evolution operator, and taking the integration of variable $\lambda$, one gets
+\formula{\braket{\Delta A_{\alpha}(t)} = \sum_{\beta}\sum_{m,n}\frac{f(\epsilon_{n})-f(\epsilon_{m})}{\epsilon_{m}-\epsilon_{n}}\braket{m|d_{\beta}|n}\braket{n|a_{\alpha}|m}\int^{\infty}_0d\tau e^{-\eta\tau}\exp{\left[\frac{i}{\hbar}(\epsilon_n-\epsilon_m)\tau\right]}F_{\beta}(t-\tau).}{Kubo formula for a canonical system of non-interacting electrons}
+To obtain the response function of the system, one lets $t'=t-\tau$ and compares the result with \ref{General Kubo formula}
+\begin{equation}\label{canonical response}
+	\boxed{R_{\alpha\beta}(t-t') = \sum_{m,n}\frac{f(\epsilon_{n})-f(\epsilon_{m})}{\epsilon_{m}-\epsilon_{n}}\braket{m|d_{\beta}|n}\braket{n|a_{\alpha}|m}e^{-\eta(t-t')}\exp{\left[\frac{i}{\hbar}(\epsilon_n-\epsilon_m)(t-t')\right]}}
+\end{equation}
+Taking the Fourier transformation of this equation gives
+\begin{align}
+	\chi_{\alpha\beta}(\omega) &= \int^{+\infty}_{-\infty}d\tau e^{i\omega\tau}\theta(\tau)R_{\alpha\beta}(\tau) \\
+	&= \sum_{m,n}\frac{f(\epsilon_{n})-f(\epsilon_{m})}{\epsilon_{m}-\epsilon_{n}}\braket{m|d_{\beta}|n}\braket{n|a_{\alpha}|m}\int^{+\infty}_{-\infty}d\tau e^{i\omega\tau}\theta(\tau)e^{-\eta\tau}\exp{\left[\frac{i}{\hbar}(\epsilon_n-\epsilon_m)\tau\right]}\\
+	&= \sum_{m,n}\frac{f(\epsilon_{n})-f(\epsilon_{m})}{\epsilon_{m}-\epsilon_{n}}\braket{m|d_{\beta}|n}\braket{n|a_{\alpha}|m}\int^{+\infty}_0d\tau\exp{\left[\frac{i}{\hbar}(\epsilon_n-\epsilon_m+\hbar\omega+i\hbar\eta)\tau\right]}
+\end{align}
+\boxequation{\chi_{\alpha\beta}(\omega) = i\hbar\sum_{m,n}\frac{f(\epsilon_{m})-f(\epsilon_{n})}{(\epsilon_{n}-\epsilon_{m})(\epsilon_n-\epsilon_m+\hbar\omega+i\hbar\eta)}\braket{m|d_{\beta}|n}\braket{n|a_{\alpha}|m}.}{Response function of a canonical system of non-interacting electrons}
+It can be seen that in the last step, the presence of parameter $\eta$ guarantees the convergence of the integral over $\tau$. One verifies the reality of $\chi(\omega)$ by interchanging the dummy variables $m$ and $n$, and then taking its complex conjugate
+\begin{equation}
+	\chi^*_{\alpha\beta}(\omega) = -i\hbar\sum_{m,n}\frac{f(\epsilon_{n})-f(\epsilon_{m})}{(\epsilon_{m}-\epsilon_{n})(\epsilon_m-\epsilon_n+\hbar\omega-i\hbar\eta)}\braket{m|d_{\beta}|n}\braket{n|a_{\alpha}|m} 
+\end{equation}
+For an \textbf{oscillatory perturbation} with frequency $\Omega$, $\vec{F}(t) = \vec{\mathcal{F}}\cos{\Omega t}$, its Fourier transform is $\vec{F}(\omega) = \dfrac{\vec{\mathcal{F}}}{2}[\delta(\omega+\Omega)+\delta(\omega-\Omega)].
+$
+The general Kubo formula can then be written as
+\begin{equation}
+\Delta A_{\alpha}(\omega) = \frac{\mathcal{F}_{\beta}}{2}\chi_{\alpha\beta}(\omega)[\delta(\omega+\Omega)+\delta(\omega-\Omega)].
+\end{equation}
+It can be seen that in the DC limit ($\Omega=0$), $\chi^*_{\alpha\beta}(\omega)=\chi_{\alpha\beta}(\omega)$ and thus the response function is real.
+%For an \textbf{oscillatory perturbation} with frequency $\omega$, $\vec{F}(t) = \vec{\mathcal{F}}e^{i\omega_Lt}$, equation \ref*{Kubo formula for a canonical system of non-interacting electrons} reduces to
+%\boxequation{\braket{\Delta A_{\alpha}(t)} = \sum_{\beta}i\hbar\sum_{m,n}\frac{f(\epsilon_{m})-f(\epsilon_{n})}{(\epsilon_{m}-\epsilon_{n})(\epsilon_n-\epsilon_m+i\hbar\eta-\hbar\omega_L)}\braket{m|d_{\beta}|n}\braket{n|a_{\alpha}|m}\mathcal{F}_{\beta}e^{i\omega_Lt}.}{The response of a canonical system of electrons to a harmonically oscillatory perturbation}
+\begin{mdframed}[backgroundcolor=gray!16]
+	\textbf{Proof of identity \ref*{bloch dominicis}}\begin{center}
+		\begin{minipage}{42em}
+			The identity \ref{bloch dominicis} can easily be obtained by using the Bloch de Dominicis theorem. However, here one will prove it using identities from previous sections.\\
+			Anti-commutation relations of fermions give
+			\begin{align}
+				c^{\dagger}_mc_nc^{\dagger}_{m'}c_{n'} &= \delta_{n,m'}c^{\dagger}_mc_{n'} - c^{\dagger}_mc^{\dagger}_{m'}c_nc_{n'}\\ &= \delta_{n,m'}c^{\dagger}_mc_{n'} - c^{\dagger}_{m'}c^{\dagger}_mc_{n'}c_n\\ &= \delta_{n,m'}c^{\dagger}_mc_{n'} - \delta_{m,n'}c^{\dagger}_{m'}c_n + c^{\dagger}_{m'}c_{n'}c^{\dagger}_mc_n .
+			\end{align}
+			Then, one has
+			\begin{align}
+			\braket{c^{\dagger}_mc_nc^{\dagger}_{m'}c_{n'}}_{eq} &= \delta_{n,m'}\braket{c^{\dagger}_mc_{n'}}_{eq} - \delta_{m,n'}\braket{c^{\dagger}_{m'}c_n}_{eq} + \braket{c^{\dagger}_{m'}c_{n'}c^{\dagger}_mc_n}_{eq}\\
+			&= \delta_{n,m'}\braket{c^{\dagger}_mc_{n'}}_{eq} - \delta_{m,n'}\braket{c^{\dagger}_{m'}c_n}_{eq} + \frac{1}{Z}\text{Tr}\left\lbrace e^{-\beta H_0}c^{\dagger}_{m'}c_{n'}c^{\dagger}_mc_n\right\rbrace\\
+			&= \delta_{n,m'}\braket{c^{\dagger}_mc_{n'}}_{eq} - \delta_{m,n'}\braket{c^{\dagger}_{m'}c_n}_{eq} + \frac{e^{\beta\left(\epsilon_{n'}-\epsilon_{m'}\right)}}{Z}\text{Tr}\left\lbrace c^{\dagger}_{m'}c_{n'}e^{-\beta H_0}c^{\dagger}_mc_n\right\rbrace\\
+			&= \delta_{n,m'}\braket{c^{\dagger}_mc_{n'}}_{eq} - \delta_{m,n'}\braket{c^{\dagger}_{m'}c_n}_{eq} + \frac{e^{\beta\left(\epsilon_{n'}-\epsilon_{m'}\right)}}{Z}\text{Tr}\left\lbrace e^{-\beta H_0}c^{\dagger}_mc_nc^{\dagger}_{m'}c_{n'}\right\rbrace\\
+			&= \delta_{n,m'}\braket{c^{\dagger}_mc_{n'}}_{eq} - \delta_{m,n'}\braket{c^{\dagger}_{m'}c_n}_{eq} + e^{\beta\left(\epsilon_{n'}-\epsilon_{m'}\right)}\braket{c^{\dagger}_mc_nc^{\dagger}_{m'}c_{n'}}_{eq}.
+			\end{align}
+			Hence, thermal expectation value of $c^{\dagger}_mc_nc^{\dagger}_{m'}c_{n'}$ can be written as
+		\end{minipage}
+		\begin{minipage}{42em}
+			\begin{equation}\label{4operator}
+			\braket{c^{\dagger}_mc_nc^{\dagger}_{m'}c_{n'}}_{eq} = \frac{1}{1-e^{\beta\left(\epsilon_{n'}-\epsilon_{m'}\right)}}\left[\delta_{n,m'}\braket{c^{\dagger}_mc_{n'}}_{eq} - \delta_{m,n'}\braket{c^{\dagger}_{m'}c_n}_{eq}\right].
+			\end{equation}
+			Next, one treats the two-operator terms in a similar manner
+			\begin{align}
+			\braket{c^{\dagger}_mc_n}_{eq} &= \delta_{m,n} - \braket{c_nc^{\dagger}_m}_{eq} = \delta_{m,n} - \frac{1}{Z}\text{Tr}\{e^{-\beta H_0}c_nc^{\dagger}_m\}\\ =& \delta_{m,n} - e^{\beta\epsilon_n}\frac{1}{Z}\text{Tr}\{c_ne^{-\beta H_0}c^{\dagger}_m\} = \delta_{m,n} - e^{\beta\epsilon_n}\braket{c^{\dagger}_mc_n}_{eq}
+			\end{align}
+			\begin{equation}
+				\Rightarrow \braket{c^{\dagger}_mc_n}_{eq} = \frac{\delta_{m,n}}{1+e^{\beta\epsilon_n}}
+			\end{equation}
+			Inserting this expression into equation \ref{4operator} yields the identity that one needs
+			\begin{align}
+			\braket{c^{\dagger}_mc_nc^{\dagger}_{m'}c_{n'}}_{eq} = \frac{\delta_{m,n'}\delta_{m',n}}{1-e^{\beta\left(\epsilon_{n'}-\epsilon_{m'}\right)}}[f(\epsilon_{n'}) - f(\epsilon_{n})].
+			\end{align}
+			This procedure can also be applied to derive the general Bloch de Dominicis theorem.
+		\end{minipage}
+	\end{center}
+\end{mdframed}
+%In this limit ($\omega\rightarrow0$), we have
+%\begin{equation}
+%	\chi_{\alpha\beta}(\omega\rightarrow0) = i\hbar\sum_{m,n}\frac{f(\epsilon_{m})-f(\epsilon_{n})}{(\epsilon_{n}-\epsilon_{m})^2}\braket{m|d_{\beta}|n}\braket{n|a_{\alpha}|m}.
+%\end{equation}
+In this DC limit and at zero temperature, $T\rightarrow0$,
+\begin{equation*}
+	f(\epsilon_m) - f(\epsilon_n) = \left\lbrace\begin{array}{rcl}
+		1 \text{ if } \epsilon_n<E_F<\epsilon_m\\
+		-1 \text{ if } \epsilon_m<E_F<\epsilon_n
+	\end{array}\right.,
+\end{equation*}
+and the response function becomes
+\begin{equation}
+	\boxed{\chi_{\alpha\beta}(\omega\rightarrow0) = i\hbar\sum_{\epsilon_n<E_F<\epsilon_m}\frac{\braket{m|d_{\beta}|n}\braket{n|a_{\alpha}|m} - \braket{n|d_{\beta}|m}\braket{n|a_{\alpha}|m}}{(\epsilon_{n}-\epsilon_{m})^2}.}
+\end{equation}
+\subsection{Conductivity of a grand canonical system of non-interacting electrons}
+In the dipole approximation, the interaction between an electromagnetic field and a system of electrons is given by
+\begin{equation}
+	H_{\text{e-light}} = e\sum_{i=1}^N\vec{r}_i\cdot\vec{E}(t)
+\end{equation}
+Hence, one can take the observable $\vec{B}$ to be $-e\displaystyle\sum_{i=1}^N\vec{r}_i$ and function $\vec{F}(t)$ to be $\vec{E}(t)$. On the other hand, the measuring observable $\vec{A}$ is the density current, which can be written as
+\begin{equation}
+\vec{\mathcal{J}} = \frac{1}{V}\vec{J} = \frac{1}{V}\sum_{l=1}^N\vec{j}_l
+\end{equation}
+with $\vec{J}$ and $\vec{j}_l$ are, respectively, the total and single-particle current operators. Therefore, using formula \ref{Response function of a canonical system of non-interacting electrons}, one obtains the response function of current density due to external electric field
+\begin{equation}
+\boxed{\sigma_{\alpha\beta}(\omega) = i\frac{e\hbar}{V}\sum_{m,n}\frac{f(\epsilon_{n})-f(\epsilon_{m})}{(\epsilon_{n}-\epsilon_{m})(\epsilon_n-\epsilon_m+\hbar\omega+i\hbar\eta)}\braket{m|v_{\beta}|n}\braket{n|j_{\alpha}|m}}
+\end{equation}
+
+\pagebreak
+
+\listofmyequations
+
+
+\end{document}

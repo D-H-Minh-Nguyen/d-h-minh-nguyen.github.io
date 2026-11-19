@@ -1,0 +1,634 @@
+\documentclass[a4paper,12pts]{article}
+\usepackage[margin=1.5cm,includefoot,footskip=30pt]{geometry}
+\usepackage{layout}
+\usepackage{amsmath,amssymb,mathtools}
+%\usepackage{slashed}
+\usepackage{graphicx}
+\numberwithin{equation}{section}
+\usepackage{mdframed}
+\usepackage[english]{babel}
+\usepackage{comment}
+\usepackage{tikz}
+\usetikzlibrary{decorations.pathmorphing,patterns}
+\usepackage{gensymb}
+\usepackage{fancybox,xcolor}
+\usepackage{empheq}
+\usepackage{braket}
+
+\usepackage{listings}
+\usepackage{color}
+
+%\excludecomment{answer}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\newlength\mytemplen
+\newsavebox\mytempbox
+
+\makeatletter
+\newcommand\codegraybox{%
+	\@ifnextchar[%]
+	{\@codegraybox}%
+	{\@codegraybox[0pt]}}
+
+\def\@codegraybox[#1]{%
+	\@ifnextchar[%]
+	{\@@codegraybox[#1]}%
+	{\@@codegraybox[#1][0pt]}}
+
+\def\@@codegraybox[#1][#2]#3{
+	\sbox\mytempbox{#3}%
+	\mytemplen\ht\mytempbox
+	\advance\mytemplen #1\relax
+	\ht\mytempbox\mytemplen
+	\mytemplen\dp\mytempbox
+	\advance\mytemplen #2\relax
+	\dp\mytempbox\mytemplen
+	\colorbox{backcolour}{\hspace{1em}\usebox{\mytempbox}\hspace{1em}}}
+
+\makeatother
+
+\renewcommand\appendix{\par
+	\setcounter{section}{0}
+	\setcounter{subsection}{0}
+	\setcounter{figure}{0}
+	\setcounter{table}{0}
+	\renewcommand\thesection{Appendix \Alph{section}}
+	\renewcommand\thefigure{\Alph{section}\arabic{figure}}
+	\renewcommand\thetable{\Alph{section}\arabic{table}}
+}
+
+\begin{document}
+	%\selectlanguage{vietnam}
+	\title{\textbf{Notes on Second Quantization}\vspace{-2ex}}
+	\author{Nguyen Duy Hoang Minh}
+	\date{\vspace{-2ex}}
+	\maketitle
+	
+	\tableofcontents
+	\bigbreak\bigbreak\bigbreak\bigbreak
+	\noindent This writing is just a systematization of my understanding of the problem. The main reference documents are
+	\begin{itemize}
+		\item Statistical Mechanics: a set of lectures - Feynman (Chapter 6, section 6.7)
+		\item Principles of Quantum Mechanics - Shankar (Chapter 10)
+		\item Condensed Matter Field Theory - Altland, Simons (Chapter 2)
+		\item Many-body Quantum Theory in Condensed Matter Physics - Henrik Bruus, Karsten Flensberg (Chapter 1)
+	\end{itemize}
+	and some lecture notes. Its particular goal is to answer two questions:
+	\begin{itemize}
+		\item[+] What is the connection between the second quantization formalism and the conventional quantum mechanics (some people call it first quantization formalism)?
+		\item[+] What are field operators?
+	\end{itemize}
+	and to present a clearer view into the problem. This note is still incomplete (subsection 2.4.5 and section 3) due to two reasons: (1) I need to review spin since studying this makes me realize I have not fully understood it; (2) I feel lazy since I have been writing this for over one month, and it is time to come back to reality. I hope that I will finish this later.
+	\pagebreak
+	%\part{Second Quantization Formalism}
+	\section{Many-body systems in first quantization formalism}
+	\subsection{State}
+	A fundamental assumption for $N$-particle systems is that \textbf{identical particles} are indistinguishable, i.e. if two single-particle quantum states of two particles are interchanged, the physics of the system does not change (the obtained state is equivalent to the original one)\footnote{\textbf{Reference for later use:} In one document I found, it states that this assumption is only equivalent to the fact that all physical observables must be permutation invariant, $\braket{\psi|\hat{A}|\psi} = \braket{\psi|\hat{P}_{ij}^{\dagger}\hat{A}\hat{P}_{ij}|\psi}$.}. From this assumption, one classifies particles into bosons and fermions.\bigbreak
+	One now considers a complete and orthonormal single-particle basis $\{\ket{\nu_1},\ket{\nu_2},\cdots\}$:
+	\begin{equation}
+	\sum_{\nu}\ket{\nu}\bra{\nu} = \mathbf{1}\qquad,\qquad\qquad \braket{\mu|\nu} = \delta_{\mu\nu}.
+	\end{equation}
+	A system of $N$ particles is described by a state vector $\ket{\psi}$ living in a product space $\mathcal{H}^N$ of $N$ single-particle Hilbert spaces. This state vector can be expanded as follow
+	\begin{align}
+	\ket{\psi} =& \sum_{\nu_1}\braket{\nu_1|\psi}\ket{\nu_1} = \sum_{\nu_1,\nu_2}(\bra{\nu_1}\otimes\bra{\nu_2})\ket{\psi}\ket{\nu_1}\otimes\ket{\nu_2}\nonumber\\
+	&= \cdots = \sum_{\nu_1,\nu_2,\cdots,\nu_N}(\bra{\nu_1}\otimes\bra{\nu_2}\otimes\cdots\otimes\bra{\nu_N})\ket{\psi}\ket{\nu_1}\otimes\ket{\nu_2}\otimes\cdots\otimes\ket{\nu_N}.
+	\end{align}
+	This expression shows that any $N$-particle state can be expressed as a linear superposition of direct product states containing $N$ factors of single-particle basis states. In other words, $\ket{\nu_1}\otimes\ket{\nu_2}\otimes\cdots\otimes\ket{\nu_N}$ are complete and orthonormal states which span the Hilbert space $\mathcal{H}^N$. However, this expression does not satisfy the symmetry of fermion or boson, which is necessarily incorporated into the basis states. Hence, one introduces a new basis for each case\footnote{These basis sets are obtained by applying the symmetrization operator $S_+$ or antisymmetrization $S_-$. Here one just takes the results.}
+	\begin{eqnarray}\label{definition}
+	\ket{\psi_{\nu_1\nu_2\cdots\nu_N}^{S/A}} = \frac{1}{\sqrt{\prod_{\nu'}(n_{\nu'}!)}}\frac{1}{\sqrt{N!}}\sum_{\mathcal{P}}\zeta^{P}\ket{\nu_{P1}}\otimes\ket{\nu_{P2}}\otimes\cdots\otimes\ket{\nu_{PN}}.
+	\end{eqnarray}
+	Here, $\zeta = 1$ for bosonic systems and $-1$ for fermionic ones, $n_{\nu_i}$ represents the total number of particles in state $\nu_i$, and $P$ denotes number of the permutations $\mathcal{P}$. A consequence of the symmetrization/antisymmetrization is that in fermionic systems one state can only accommodate one particle (Pauli's exclusion principle) while in bosonic systems there is no such constraint
+	\begin{eqnarray}
+	&n_{\nu_i} = 0,1 \qquad \text{for fermionic systems},&\\
+	&n_{\nu_i} = 0,1,2,3,\cdots \qquad \text{for bosonic systems}.&
+	\end{eqnarray}
+	\begin{itemize}
+		\item \textbf{Orthonormality:}
+		\begin{align}
+		\braket{\psi_{\mu_1\mu_2\cdots\mu_N}^{S/A}|\psi_{\nu_1\nu_2\cdots\nu_N}^{S/A}} &= \frac{1}{\sqrt{\prod_{i}(n_{\nu_i}!n_{\mu_i}!)}}\frac{1}{N!}\sum_{\mathcal{P},\mathcal{Q}}\zeta^P\zeta^Q\braket{\mu_{Q1}|\nu_{P1}}\braket{\mu_{Q2}|\nu_{P2}}\cdots\braket{\mu_{QN}|\nu_{PN}}\\
+		&= \frac{1}{\prod_{i}\sqrt{(n_{\nu_i}!n_{\mu_i}!)}}\frac{1}{N!}\sum_{\mathcal{P},\mathcal{R}}\zeta^R\braket{\mu_1|\nu_{R1}}\braket{\mu_2|\nu_{R2}}\cdots\braket{\mu_N|\nu_{RN}}\\
+		&= \frac{1}{\prod_{i}\sqrt{(n_{\nu_i}!n_{\mu_i}!)}}\sum_{\mathcal{R}}\zeta^R\delta_{\mu_1,\nu_{R1}}\delta_{\mu_2,\nu_{R2}}\cdots\delta_{\mu_N,\nu_{RN}}\label{def:ortho}\\
+		(&= 1 \text{ if } n_{\mu_1}=n_{\nu_1}, n_{\mu_2}=n_{\nu_2},\cdots,n_{\mu_N}=n_{\nu_N}).
+		\end{align}
+		Notice that in the last result ($=1$), one has used the idea that if there are $n_{\nu_i}$ particles in state $\nu_i$, then there are $n_{\nu_i}!$ permutations.
+		\item \textbf{Completeness:}
+		\begin{align}
+		\sum_{\nu_1,\nu_2,\cdots,\nu_N}&\frac{\prod_{\nu_j}n_{\nu_j}!}{N!} \ket{\psi_{\nu_1\nu_2\cdots\nu_N}^{S/A}}\bra{\psi_{\nu_1\nu_2\cdots\nu_N}^{S/A}}\nonumber\\
+		&= \sum_{\nu_1,\nu_2,\cdots,\nu_N}\frac{\prod_{\nu_j}n_{\nu_j}!}{\sqrt{\prod_{\nu_i}(n_{\nu_i}!n_{\nu_i}!)}}\frac{1}{(N!)^2}\sum_{\mathcal{P},\mathcal{Q}}\zeta^P\zeta^Q(\ket{\nu_{Q1}}\bra{\nu_{P1}})\otimes\cdots\otimes(\ket{\nu_{QN}}\bra{\nu_{PN}})\\
+		&= \frac{1}{N!}\sum_{\mathcal{R}}\zeta^R\left(\sum_{\nu_1}\ket{\nu_{1}}\bra{\nu_{R1}}\right)\otimes\cdots\otimes\left(\sum_{\nu_N}\ket{\nu_{N}}\bra{\nu_{RN}}\right)\\
+		&= \mathbf{1}^{S/A}.\label{def:complete}
+		\end{align}
+		Here, $\mathbf{1}^{S/A}$ is the unit operator on the space of symmetrized/antisymmetrized $N$-particle states. This expression can also be verified by acting this operator onto an arbitrary symmetric/antisymetric state $\ket{\psi_{\mu_1\mu_2\cdots\mu_N}^{S/A}}$
+		\begin{align*}
+		\sum_{\nu_1,\nu_2,\cdots,\nu_N}&\frac{\prod_{\nu_j}n_{\nu_j}!}{N!} \ket{\psi_{\nu_1\nu_2\cdots\nu_N}^{S/A}}\braket{\psi_{\nu_1\nu_2\cdots\nu_N}^{S/A}|\psi_{\mu_1\mu_2\cdots\mu_N}^{S/A}} \\
+		&= \sum_{\nu_1,\nu_2,\cdots,\nu_N}\frac{\prod_{\nu_j}n_{\nu_j}!}{N!} \ket{\psi_{\nu_1\nu_2\cdots\nu_N}^{S/A}}\frac{1}{\prod_i\sqrt{(n_{\nu_i}!n_{\mu_i}!)}}\sum_{\mathcal{R}}\zeta^R\delta_{\nu_1,\mu_{R1}}\delta_{\nu_2,\mu_{R2}}\cdots\delta_{\nu_N,\mu_{RN}}\\
+		&= \frac{\prod_{\nu_j}n_{\nu_j}!}{N!\prod_{\mu_i}n_{\mu_i}!}\sum_{\mathcal{R}}\zeta^R\ket{\psi_{\mu_{R1}\mu_{R2}\cdots\mu_{RN}}^{S/A}}\\
+		&= \frac{1}{N!}\sum_{\mathcal{R}}\ket{\psi_{\mu_1\mu_2\cdots\mu_N}^{S/A}} = \ket{\psi_{\mu_1\mu_2\cdots\mu_N}^{S/A}}.
+		\end{align*}
+	\end{itemize}
+	After introducing the new basis sets for multiparticle states, one notes that due to the symmetrization/antisymmetrization (or more intrinsically, due to the indistinguishability assumption), the state vector representing an $N$-particle system is restricted to live in a symmetric/antisymmetric subspace\footnote{Refer other textbooks for more mathematical details, e.g. Condensed Matter Field Theory - Altland.} $\mathcal{F}^N\in\mathcal{H}^N$ instead of the entire Hilbert space $\mathcal{H}^N$.
+	\subsection{Operator}
+	In the Hilbert space spanned by single-particle states $\ket{m}$, one-body operators take the form of
+	\begin{equation}
+	{o_{n}}^{(1)} = \sum_{\nu_i,\nu_j}{o_{n}}^{(1)}_{\nu_i\nu_j}\ket{\nu_i}\bra{\nu_j},
+	\end{equation}
+	with ${o_{n}}^{(1)}_{\nu_i\nu_j} = \braket{\nu_i|{o_{n}}^{(1)}|\nu_j}$. In position representation, the matrix element ${o_{n}}^{(1)}_{\nu_i\nu_j}$ can be written as
+	\begin{equation}
+	{o_{n}}^{(1)}_{\nu_i\nu_j} = \int d^3rd^3r'\braket{\nu_i|\vec{r}}\braket{\vec{r}|{o_{n}}^{(1)}|\vec{r}'}\braket{\vec{r}'|\nu_j} = \int d^3rd^3r'\psi_{\nu_i}^*(\vec{r})\braket{\vec{r}|{o_{n}}^{(1)}|\vec{r}'}\psi_{\nu_j}(\vec{r}').
+	\end{equation}
+	\begin{mdframed}[backgroundcolor=gray!16]
+		\textbf{Example:}\begin{center}
+			\begin{minipage}{38em}
+				To illustrate this expression, one considers the action of momentum operator onto the wavefunction
+				\begin{equation}
+				\vec{p}\psi(\vec{r}) = \braket{\vec{r}|p|\psi} = \int d^3r'\braket{\vec{r}|\vec{p}|\vec{r}'}\braket{\vec{r}'|\psi} = \int d^3r'\braket{\vec{r}|\vec{p}|\vec{r}'}\psi(\vec{r}').
+				\end{equation}
+				Using
+				\begin{equation}
+				\braket{\vec{r}|\vec{p}|\vec{r}'} = -i\hbar\frac{\partial}{\partial\vec{r}}\delta^3(\vec{r}-\vec{r}') = i\hbar\frac{\partial}{\partial\vec{r}'}\delta^3(\vec{r}-\vec{r}').
+				\end{equation}
+				and integrating by parts, one obtains the familiar result
+				\begin{equation}
+				\vec{p}\psi(\vec{r}) = -i\hbar\nabla\psi(\vec{r}).
+				\end{equation}
+			\end{minipage}
+		\end{center}
+	\end{mdframed}
+	Similarly, in the Hilbert space spanned by two-particle states $\ket{m}\otimes\ket{\mu}$, two-body operators take the form of
+	\begin{equation}
+	{o_{ij}}^{(2)} = \sum_{m,n,\mu,\nu}{o_{ij}}^{(2)}_{mn\mu\nu}(\ket{m}\otimes\ket{\mu})(\bra{\nu}\otimes\bra{n}),
+	\end{equation}
+	with ${o_{ij}}^{(2)}_{mn\mu\nu} = (\bra{\nu}\otimes\bra{n}){o_{ij}}^{(2)}(\ket{m}\otimes\ket{\mu})$. In coordinate representation, the matrix element can be written as
+	\begin{align}
+	{o_{ij}}^{(2)}_{mn\mu\nu} &= \int d^3r_1d^3r_1'd^3r_2d^3r_2' (\bra{\nu}\otimes\bra{n})(\ket{\vec{r}_1}\otimes\ket{\vec{r}_1'})(\bra{\vec{r}_1'}\otimes\bra{\vec{r}_1}){o_{ij}}^{(2)}(\ket{\vec{r}_2}\otimes\ket{\vec{r}_2'})(\bra{\vec{r}_2'}\otimes\bra{\vec{r}_2})(\ket{m}\otimes\ket{\mu}) \\
+	&= \int d^3r_1d^3r_1'd^3r_2d^3r_2' \psi_n^*(\vec{r}_1)\psi_{\nu}^*(\vec{r}_1')\braket{\vec{r}_1,\vec{r}_1'|{o_{ij}}|\vec{r}_2,\vec{r}_2'}\psi_m(\vec{r}_2)\psi_{\mu}(\vec{r}_2').
+	\end{align}
+	In case of multiparticle systems, one now wants to determine the operators representing observable physical quantities of the systems. In general, an observable can be written in the form
+	\begin{equation}
+	\sum_{i}\mathcal{Q}_i + \sum_{i<j}\mathcal{Q}_{ij} + \cdots \equiv \mathcal{Q}^{(1)} + \mathcal{Q}^{(2)} + \cdots
+	\end{equation}
+	where $\mathcal{Q}_{i}$ is a function of the dynamic variables of the $i$th particle, $\mathcal{Q}_{ij}$ that of the dynamic variables of the $i$th and $j$th particles, etc. Consequently, the corresponding one-body operators and (symmetric) two-body operators representing observable quantities $\mathcal{Q}^{(1)}$ and $\mathcal{Q}^{(2)}$ are written as
+	\begin{equation}
+	\mathcal{O}^{(1)} = \sum_{i}^N{o_i}^{(1)},\qquad \mathcal{O}^{(2)} = \frac{1}{2}\sum_{i\neq j}^N{o_{ij}}^{(2)},
+	\end{equation}
+	where ${o_i}^{(1)}$ is an ordinary one-body operator acting on the $i$th particle, ${o_{ij}}^{(2)}$ two-body operator acting between the $i$th and $j$th particles. The action of one-body operator onto the multiparticle basis states can be expressed as\footnote{Here, the calculations become somewhat lengthy, and thus one puts indices on states and operators for clarification. The $i$th particle's Hilbert space contains states $\ket{\cdots}_{(i)}$ and operators $o_i$.}
+	\begin{align}
+	\mathcal{O}^{(1)}\ket{\psi_{\nu_1\nu_2\cdots\nu_N}^{S/A}} = \frac{1}{\sqrt{\prod_{\nu}(n_{\nu}!)}}\frac{1}{\sqrt{N!}}&\sum_{i=1}^N{o_i}^{(1)}\sum_{\mathcal{P}}\zeta^{P}\ket{\nu_{P1}}_{(1)}\otimes\cdots\ket{\nu_{Pi}}_{(i)}\otimes\cdots\otimes\ket{\nu_{PN}}_{(N)}\\
+	= \frac{1}{\sqrt{\prod_{\nu}(n_{\nu}!)}}\frac{1}{\sqrt{N!}}&\sum_{i=1}^N{o_i}^{(1)}\sum_{k=1}^N\zeta^{k+i-1}\ket{\nu_k}_{(i)}\otimes\sum_{\mathcal{Q}_k}\zeta^{Q_k}\ket{\nu_{Q1}}_{(1)}\otimes\cdots(\text{no $i$th particle})\cdots\otimes\ket{\nu_{QN}}_{(N)}\\
+	= \frac{1}{\sqrt{\prod_{\nu}(n_{\nu}!)}}\frac{1}{\sqrt{N!}}&\sum_{i=1}^N\sum_{\nu_m,\nu_n}{}_{(i)}\braket{\nu_m|{o_i}^{(1)}|\nu_n}_{(i)}\sum_{k=1}^N\zeta^{k+i-1}{}_{(i)}\braket{\nu_n|\nu_k}_{(i)}\nonumber\\
+	&\times\ket{\nu_m}_{(i)}\otimes\sum_{\mathcal{Q}_k}\zeta^{Q_k}\ket{\nu_{Q1}}_{(1)}\otimes\cdots\underbrace{(\text{no $i$th particle})}_{\text{equivalently, no $\nu_k$ state}}\cdots\otimes\ket{\nu_{QN}}_{(N)}\\
+	= \frac{1}{\sqrt{\prod_{\nu}(n_{\nu}!)}}\frac{1}{\sqrt{N!}}&\sum_{\nu_m,\nu_n}\braket{\nu_m|o^{(1)}|\nu_n}\sum_{k=1}^N\zeta^{k-1}\delta_{\nu_n,\nu_k}\nonumber\\
+	&\times\sum_{i=1}^N\zeta^i\sum_{\mathcal{Q}_k}\zeta^{Q_k}\underbrace{\ket{\nu_{Q1}}_{(1)}\otimes\cdots\ket{\nu_m}_{(i)}\otimes\cdots\otimes\ket{\nu_{QN}}_{(N)}}_{\text{no $\nu_k$ state}} \label{index}\\
+	= \frac{1}{\sqrt{\prod_{\nu}(n_{\nu}!)}}\frac{1}{\sqrt{N!}}&\sum_{\nu_m,\nu_n}\braket{\nu_m|o^{(1)}|\nu_n}\sum_{k=1}^N\zeta^{k-1}\delta_{\nu_n,\nu_k}\left(\prod_{\nu'}\sqrt{n_{\nu'}!}\right)\sqrt{N!}\ket{\psi_{\nu_1\nu_2\cdots\nu_N}^{S/A}(\nu_m\text{ replaces }\nu_k)}\\
+	= \sum_{\nu_m,\nu_n}\braket{\nu_m|o^{(1)}|\nu_n}&\sqrt{\frac{\prod_{\nu'}(n_{\nu'}!)}{\prod_{\nu}(n_{\nu}!)}}\sum_{k=1}^N\zeta^{k-1}\delta_{\nu_n,\nu_k}\ket{\psi_{\nu_1\nu_2\cdots\nu_N}^{S/A}(\nu_m\text{ replaces }\nu_k)}\\
+	= \sum_{\nu_m,\nu_n}\braket{\nu_m|o^{(1)}|\nu_n}&\sqrt{\frac{\prod_{\nu'}(n_{\nu'}!)}{\prod_{\nu}(n_{\nu}!)}}n_{\nu_n}\ket{\psi_{\nu_1\nu_2\cdots\nu_N}^{S/A}(\nu_m\text{ replaces }\nu_n)}
+	\end{align}
+	In the second equality, one changes the sum over permutations $\sum_{\mathcal{P}}\zeta^{P}$ by letting $Pi$ run through $N$ values from $1$ to $N$ and the other indices be summed as $\sum_{\mathcal{Q}_k}\zeta^{Q_k}$, which includes $(N-1)!$ permutations (all the elements are different from $\nu_{Pi}$\footnote{a property of determinant/permanent.}). In the equality \ref{index}, the matrix element $\braket{\nu_m|{o_i}^{(1)}|\nu_n}$ does not depend on the particle index $i$ since one considers identical particles. Now, one divides the two summations over all basis states $\displaystyle\sum_{\nu_m,\nu_n}$ into two part: $\displaystyle\sum_{\nu_m=\nu_n}$ and $\displaystyle\sum_{\nu_m\neq\nu_n}$. The first summation is given by
+	\begin{align}
+	&\sum_{\nu_m}\braket{\nu_m|o^{(1)}|\nu_m}\sqrt{\frac{\prod_{\nu'}(n_{\nu'}!)}{\prod_{\nu}(n_{\nu}!)}}n_{\nu_n}\ket{\psi_{\nu_1\nu_2\cdots\nu_N}^{S/A}}\nonumber\\
+	=& \sum_{\nu_m}\braket{\nu_m|o^{(1)}|\nu_m}\sqrt{\frac{n_{\nu_m'}!}{n_{\nu_m}!}}n_{\nu_n}\ket{\psi_{\nu_1\nu_2\cdots\nu_N}^{S/A}}\\
+	=& \sum_{\nu_m}\braket{\nu_m|o^{(1)}|\nu_m}n_{\nu_m}\ket{\psi_{\nu_1\nu_2\cdots\nu_N}^{S/A}}.
+	\end{align}
+	The second summation reads
+	\begin{align}
+	&\sum_{\nu_m\neq
+		\nu_n}\braket{\nu_m|o^{(1)}|\nu_n}\sqrt{\frac{\prod_{\nu'}(n_{\nu'}!)}{\prod_{\nu}(n_{\nu}!)}}n_{\nu_n}\ket{\psi_{\nu_1\nu_2\cdots\nu_N}^{S/A}(\nu_m\text{ replaces }\nu_n)}\nonumber\\
+	=& \sum_{\nu_m\neq\nu_n}\braket{\nu_m|o^{(1)}|\nu_n}\sqrt{\frac{n_{\nu_m'}!n_{\nu_n'}!}{n_{\nu_m}!n_{\nu_n}!}}n_{\nu_n}\ket{\psi_{\nu_1\nu_2\cdots\nu_N}^{S/A}(\nu_m\text{ replaces }\nu_n)}\nonumber\\
+	=& \sum_{\nu_m\neq\nu_n}\braket{\nu_m|o^{(1)}|\nu_n}\sqrt{n_{\nu_n}(n_{\nu_m}+1)}\ket{\psi_{\nu_1\nu_2\cdots\nu_N}^{S/A}(\nu_m\text{ replaces }\nu_n)}.
+	\end{align}
+	Consequently, the action of $\mathcal{O}^{(1)}$ onto state $\ket{\psi_{\nu_1\nu_2\cdots\nu_N}^{S/A}}$ is now given by
+	\begin{align}
+	\mathcal{O}^{(1)}\ket{\psi_{\nu_1\nu_2\cdots\nu_N}^{S/A}} = \sum_{\nu_m}\braket{\nu_m|o^{(1)}|\nu_m}n_{\nu_m}\ket{\psi_{\nu_1\nu_2\cdots\nu_N}^{S/A}} + \sum_{\nu_m\neq\nu_n}\braket{\nu_m|o^{(1)}|\nu_n}\sqrt{n_{\nu_n}(n_{\nu_m}+1)}\ket{\psi_{\nu_1\nu_2\cdots\nu_N}^{S/A}(\nu_m\text{ replaces }\nu_n)}.\label{eq:action}
+	\end{align}
+	Notice that for fermionic states, $\ket{\psi_{\nu_1\nu_2\cdots\nu_N}^{A}}=0$ if there exists a state $\nu_k$ so that $n_{\nu_k}>1$. Here, the action of the two-body operator can be calculated in a similar way but is considerably lengthier, and thus one does not do it.
+	\subsection{Deep Dive: position (real space) representation}
+	Now one returns to some familiar equations in basic quantum mechanics. According to the definition \ref{definition} with the single-particle position basis states $\{\ket{\nu_i}\} \rightarrow \{\ket{\vec{r}}\}$, the multiparticle states read\footnote{Here, one has employed the fact that there are always no more than one particle (fermion or boson) at a position $\vec{r}_i$. I feel quite curious about this idea since if one considers position as a quantum number, it would be different from other quantities. I'm not sure whether this idea is right or wrong.}
+	\begin{equation}
+	\ket{\vec{r}_1,\vec{r}_2,\cdots,\vec{r}_N} = \frac{1}{\sqrt{N!}}\sum_{\mathcal{P}}\zeta^{P}\ket{\vec{r}_{P1}}\otimes\ket{\vec{r}_{P2}}\otimes\cdots\otimes\ket{\vec{r}_{PN}}
+	\end{equation}
+	One projects the symmetric/antisymmetric state vectors $\ket{\psi_{\nu_1\nu_2\cdots\nu_N}^{S/A}}$ onto the position basis states to obtain their coordinate representations
+	\begin{align}
+	\braket{\vec{r}_1,\vec{r}_2,\cdots,\vec{r}_N|\psi_{\nu_1\nu_2\cdots\nu_N}^{S/A}} &= \frac{1}{\sqrt{\prod_{i}(n_{\nu_i}!)}}\frac{1}{N!}\sum_{\mathcal{P},\mathcal{Q}}\zeta^P\zeta^Q\braket{\vec{r}_{Q1}|\nu_{P1}}\braket{\vec{r}_{Q2}|\nu_{P2}}\cdots\braket{\vec{r}_{QN}|\nu_{PN}}\\
+	&= \frac{1}{\sqrt{\prod_{i}(n_{\nu_i}!)}}\sum_{\mathcal{R}}\zeta^R\braket{\vec{r}_1|\nu_{R1}}\braket{\vec{r}_2|\nu_{R2}}\cdots\braket{\vec{r}_N|\nu_{RN}}\\
+	&= \sqrt{N!}\times\frac{1}{\sqrt{N!\prod_{i}(n_{\nu_i}!)}}\sum_{\mathcal{R}}\zeta^R\phi_{\nu_{R1}}(\vec{r}_1)\phi_{\nu_{R2}}(\vec{r}_2)\cdots\phi_{\nu_{RN}}(\vec{r}_N)\\
+	&= \sqrt{N!}\Phi_{\nu_1\nu_2\cdots\nu_N}^{S/A}(\vec{r}_1,\vec{r}_2,\cdots,\vec{r}_N).\label{random}
+	\end{align}
+	Here, $\Phi_{\nu_1\nu_2\cdots\nu_N}^{S/A}(\vec{r}_1,\vec{r}_2,\cdots,\vec{r}_N)$ are the symmetric/antisymmetric wavefunctions
+	\begin{itemize}
+		\item Symmetric wavefunctions $\Phi_{\nu_1\nu_2\cdots\nu_N}^S(\vec{r}_1,\vec{r}_2,\cdots,\vec{r}_N)$ representing bosonic systems:
+		\begin{equation}
+		\Phi_{\nu_1\nu_2\cdots\nu_N}^S(\vec{r}_1,\vec{r}_2,\cdots,\vec{r}_N) = \frac{1}{\sqrt{N!\prod_{\nu'}(n_{\nu'}!)}}\begin{vmatrix}
+		\psi_{\nu1}(\vec{r}_1) & \psi_{\nu2}(\vec{r}_1) & \cdots & \psi_{\nu N}(\vec{r}_1) \\
+		\psi_{\nu1}(\vec{r}_2) & \psi_{\nu2}(\vec{r}_2) & \cdots & \psi_{\nu N}(\vec{r}_2)\\
+		\vdots & \vdots & & \vdots\\
+		\psi_{\nu1}(\vec{r}_N) & \psi_{\nu2}(\vec{r}_N) & \cdots & \psi_{\nu N}(\vec{r}_N)
+		\end{vmatrix}_+.
+		\end{equation}
+		\item Antisymmetric wavefunctions
+		$\Phi_{\nu_1\nu_2\cdots\nu_N}^A(\vec{r}_1,\vec{r}_2,\cdots,\vec{r}_N)$ representing fermionic systems:
+		\begin{equation}
+		\Phi_{\nu_1\nu_2\cdots\nu_N}^A(\vec{r}_1,\vec{r}_2,\cdots,\vec{r}_N) = \frac{1}{\sqrt{N!}}\begin{vmatrix}
+		\psi_{\nu1}(\vec{r}_1) & \psi_{\nu2}(\vec{r}_1) & \cdots & \psi_{\nu N}(\vec{r}_1) \\
+		\psi_{\nu1}(\vec{r}_2) & \psi_{\nu2}(\vec{r}_2) & \cdots & \psi_{\nu N}(\vec{r}_2)\\
+		\vdots & \vdots & & \vdots\\
+		\psi_{\nu1}(\vec{r}_N) & \psi_{\nu2}(\vec{r}_N) & \cdots & \psi_{\nu N}(\vec{r}_N)
+		\end{vmatrix}_-.
+		\end{equation}
+	\end{itemize}
+	What I would like to elaborate here is the physical meaning the coefficient $\sqrt{N!}$ in \ref{random}: in case of a single particle, the projection of state vector onto the position ket gives the wavefunction $\braket{x|\nu}=\phi_{\nu}(x)$, and the corresponding physical interpretation is that $|\braket{x|\phi}|^2=|\phi(x)|^2$ is the probability density to find the particle at position $x$. In this multiparticle case, the wavefunction $\Phi_{\nu_1\nu_2\cdots\nu_N}^{S/A}(\vec{r}_1,\vec{r}_2,\cdots,\vec{r}_N)$ is normalized and its norm squared $|\Phi_{\nu_1\nu_2\cdots\nu_N}^A(\vec{r}_1,\vec{r}_2,\cdots,\vec{r}_N)|^2$ represents the probability of finding particle 1 at $\vec{r}_1$, particle 2 at $\vec{r}_2$, etc.
+	\begin{equation}
+	\int d^3r_1d^3r_2\cdots d^3r_N\left|\Phi_{\nu_1\nu_2\cdots\nu_N}^A(\vec{r}_1,\vec{r}_2,\cdots,\vec{r}_N)\right|^2 = 1.
+	\end{equation}
+	On the other hand, $\left|\braket{\vec{r}_1,\vec{r}_2,\cdots,\vec{r}_N|\psi_{\nu_1\nu_2\cdots\nu_N}^{S/A}}\right|^2$ is the probability density to find those $N$ particles in positions $(\vec{r}_1,\vec{r}_2,\cdots,\vec{r}_N)$. Hence, it is indeed equal to $N!$ times of $\left|\Phi_{\nu_1\nu_2\cdots\nu_N}^A(\vec{r}_1,\vec{r}_2,\cdots,\vec{r}_N)\right|^2$. To illustrate this idea, one considers its normalization condition in one dimensional case
+	\begin{equation}
+	\int_{-\infty}^{+\infty}dx_1\int_{-\infty}^{x_1}dx_2\cdots\int_{-\infty}^{x_{N-1}}dx_N\left|\braket{\vec{r}_1,\vec{r}_2,\cdots,\vec{r}_N|\psi_{\nu_1\nu_2\cdots\nu_N}^{S/A}}\right|^2 = \int\frac{dx_1dx_2\cdots dx_N}{N!} \left|\braket{\vec{r}_1,\vec{r}_2,\cdots,\vec{r}_N|\psi_{\nu_1\nu_2\cdots\nu_N}^{S/A}}\right|^2 = 1.
+	\end{equation}
+	This way of integrating originates from the completeness relation \ref{def:complete} (in continuous case) and guarantees that only distinct states are taken into the summation, i.e. all coordinates $x_i$ are different from each other.\bigbreak
+	If reader still finds it difficult to comprehend, it would be easier to go back to the discrete case and give a more careful thought about the completeness relation \ref{def:complete}
+	\begin{equation*}
+	\sum_{\nu_1,\nu_2,\cdots,\nu_N}\frac{\prod_{\nu_j}n_{\nu_j}!}{N!} \ket{\psi_{\nu_1\nu_2\cdots\nu_N}^{S/A}}\bra{\psi_{\nu_1\nu_2\cdots\nu_N}^{S/A}}= \mathbf{1}^{S/A}.
+	\end{equation*}
+	Due to the indistinguishability of particles, states $\ket{\psi_{\cdots\nu_i\cdots\nu_j\cdots}^{S/A}}$ and $\ket{\psi_{\cdots\nu_j\cdots\nu_i\cdots}^{S/A}}$ are equivalent, i.e. proportional to each other. If each single-particle state can only accommodate one particle, there are $N!$ states which are equivalent. However, if, for instance, particles $i$ and $j$ occupy the same single-particle state, then states $\ket{\psi_{\cdots\nu_i\cdots\nu_j\cdots}^{S/A}}$ and $\ket{\psi_{\cdots\nu_j\cdots\nu_i\cdots}^{S/A}}$ are actually the same, and thus the number of equivalent states reduces. If there are $n_{\nu_1}$ particles at state $\ket{\nu_1}$, $n_{\nu_2}$ particles at state $\ket{\nu_2}$, etc., the number of equivalent states is $\dfrac{N!}{n_{\nu_1}!n_{\nu_2}!n_{\nu_3}!\cdots}$.
+	\section{Multiparticle systems in second quantization formalism}
+	Second quantization is an effective formalism to deal with multiparticle systems in quantum mechanics. The first reason for using this formalism is to simplify the notations and concepts for those systems, e.g. all the orthonormality and completeness relations will become significantly simpler by using occupation number representation for states. The second advantage, which also makes this formalism elegant, is to investigate the wave behavior of multiparticle systems through quasi-particles\footnote{Refer to chapter 1, Condensed Matter Field Theory - Altland to gain an overview about the concept of field.}. This is also a stepping stone to the application of quantum field theory in condensed matter physics. Hence, in order to sum over all distinct states, one divides each element by this factor.
+	\subsection{State}
+	\subsubsection{Occupation number representation}
+	Firstly, one still considers an \textbf{ordered} basis set of single-particle eigenstates $\{\ket{\nu_1},\ket{\nu_2},\cdots\}$ as before. The basis states for an $N$-particle system are now denoted in the occupation representation as
+	\begin{equation}
+	\frac{1}{\sqrt{\prod_{\nu_i}(n_{\nu_i}!)}}\frac{1}{\sqrt{N!}}\sum_{\mathcal{P}}\zeta^P\ket{\nu_{P1}}\otimes\ket{\nu_{P2}}\otimes\cdots\otimes\ket{\nu_{PN}} \equiv \ket{n_{\nu_1}, n_{\nu_2}, n_{\nu_3},\cdots}, \qquad \text{with} \quad \sum_{j}n_{\nu_j} = N.
+	\end{equation}
+	Here, $n_{\nu_j}$ is the \textbf{occupation number} which is the number of particles whose states are $\ket{\nu_j}$. To emancipate oneself from the condition of a fixed particle number $N$ (in many physical processes particles can be created or annihilated), it is convenient to work in a Hilbert space large enough to accommodate a state with undetermined number of particles, which is called Fock space
+	\begin{equation}
+	\mathcal{F} = \bigoplus_{N=0}^{\infty}\mathcal{F}^N.
+	\end{equation}
+	There are two remarks on this Fock space:
+	\begin{itemize}
+		\item The direct sum contains the vacuum space $\mathcal{F}^0$, which is a one dimensional Hilbert space describing the sector of the theory with no particles present. Its single normalized basis state is the vacuum state $\ket{0}$. On the other hand, the single-particle space $\mathcal{F}^1$ is spanned by the given single-particle basis $\{\ket{\nu_i}\}$.
+		\item The basis states of Fock space are $\{\ket{n_{\nu_1}, n_{\nu_2}, n_{\nu_3},\cdots}\}$ without the condition $\sum_{j}n_{\nu_j} = N$ on the occupation numbers. Their orthonormality and completeness relations read
+		\begin{empheq}[box={\codegraybox[5pt]}]{align}
+		&\braket{n_{\nu_1}, n_{\nu_2}, n_{\nu_3},\cdots|n_{\nu_1}', n_{\nu_2}', n_{\nu_3}',\cdots} = \delta_{n_{\nu1},n_{\nu1}'}\delta_{n_{\nu2},n_{\nu2}'}\cdots,\\
+		&\sum_{n_{\nu1},n_{\nu2},\cdots}\ket{n_{\nu_1}, n_{\nu_2}, n_{\nu_3},\cdots}\bra{n_{\nu_1}, n_{\nu_2}, n_{\nu_3},\cdots} = \mathbf{1}.
+		\end{empheq}
+		These relations are obtained from the ones \ref{def:ortho} and \ref{def:complete} by noticing that $\displaystyle\sum_{\mathcal{R}}\eta^R\delta_{\mu_1,\nu_{R1}}\delta_{\nu_2,\mu_{R2}}\cdots\delta_{\nu_N,\mu_{RN}} = (\prod_{\nu_i}n_{\nu_i}!)\delta_{n_{\nu1},n_{\nu1}'}\delta_{n_{\nu2},n_{\nu2}'}\cdots$ in the orthonormality condition and $\displaystyle\sum_{\nu_1,\nu_2,\cdots,\nu_N}\frac{\prod_{\nu_j}n_{\nu_j}!}{N!}(\cdots) = \sum_{\nu_1,\nu_2,\cdots,\nu_N}^{(\text{distinct states})}(\cdots) = \sum_{n_{\nu1},n_{\nu2},\cdots}(\cdots)$ in the completeness relation.
+	\end{itemize}
+	In practice, these states are able to contribute to the linear superposition forming a general multiparticle state $\ket{\Psi}$
+	\begin{equation*}
+	\ket{\Psi} = \ket{\psi^{(0)}} + \ket{\psi^{(1)}} + \ket{\psi^{(2)}} + \cdots,
+	\end{equation*}
+	where $\ket{\psi^{(n)}}$ is an $n$-particle state. If $\ket{\Phi}$ is another multiparticle state then
+	\begin{equation*}
+	\braket{\Phi|\Psi} = \braket{\phi^{(0)}|\psi^{(0)}} + \braket{\phi^{(1)}|\psi^{(1)}} + \braket{\phi^{(2)}|\psi^{(2)}} + \cdots .
+	\end{equation*}
+	\subsubsection{Creation and annihilation operators}
+	Secondly, in order to make a correlation between eigenstates with different numbers of particles in Fock space, one introduces the creation operator and annihilation operator, respectively,
+	\begin{center}
+		\begin{minipage}{0.45\textwidth}
+			$b^{\dagger}_{\nu_i}$ and $b_{\nu_i}$ for bosons with
+			\begin{align}
+			&b^{\dagger}_{\nu_i}\ket{n_{\nu_1}, n_{\nu_2},\cdots, n_{\nu_i},\cdots} \nonumber\\
+			&= \sqrt{n_{\nu_i}+1}\ket{n_{\nu_1}, n_{\nu_2},\cdots, n_{\nu_i}+1,\cdots},\label{boson_creation} \\
+			&b_{\nu_i}\ket{n_{\nu_1}, n_{\nu_2},\cdots, n_{\nu_i},\cdots} \nonumber\\
+			&= \sqrt{n_{\nu_i}}\ket{n_{\nu_1}, n_{\nu_2},\cdots, n_{\nu_i}-1,\cdots}.\label{boson annihilation}
+			\end{align}
+		\end{minipage}
+		\vrule{}
+		\begin{minipage}{0.45\textwidth}
+			$c^{\dagger}_{\nu_i}$ and $c_{\nu_i}$ for fermions with
+			\begin{align}
+			&c^{\dagger}_{\nu_i}\ket{n_{\nu_1}, n_{\nu_2},\cdots, n_{\nu_i},\cdots} = 0 \text{ if } n_{\nu_i} = 1  \text{ or }\nonumber\\
+			&= \ket{n_{\nu_1}, n_{\nu_2},\cdots, n_{\nu_i}+1,\cdots}\text{ if } n_{\nu_i} = 0, \label{fermion_creation}\\
+			&c_{\nu_i}\ket{n_{\nu_1}, n_{\nu_2},\cdots, n_{\nu_i},\cdots} = 0 \text{ if } n_{\nu_i} = 0 \text{ or }\nonumber\\
+			&= \ket{n_{\nu_1}, n_{\nu_2},\cdots, n_{\nu_i}-1,\cdots}\text{ if } n_{\nu_i} = 1.\label{fermion annihilation}
+			\end{align}
+		\end{minipage}
+	\end{center}
+	Here, one has assumed creation and annihilation operators are adjoint. To prove this assumption, one starts with the definition of creation operator \ref{boson_creation} and \ref{fermion_creation} by multiplying them with an arbitrary bra vector and taking the complex conjugate of all basis matrix elements
+	\begin{align}
+	\braket{n_{\nu_1}', n_{\nu_2}',\cdots, n_{\nu_i}',\cdots|b^{\dagger}_{\nu_i}|n_{\nu_1}, n_{\nu_2},\cdots, n_{\nu_i},\cdots} &= \sqrt{n_{\nu_i}+1}\braket{n_{\nu_1}', n_{\nu_2}',\cdots, n_{\nu_i}',\cdots|n_{\nu_1}, n_{\nu_2},\cdots, n_{\nu_i}+1,\cdots}, \nonumber\\
+	&= \sqrt{n_{\nu_i}+1}\delta_{n_{\nu_1}',n_{\nu_1}}\delta_{n_{\nu_2}',n_{\nu_2}}\cdots\delta_{n_{\nu_i}',n_{\nu_i}+1}\cdots \nonumber\\
+	\Rightarrow  \braket{n_{\nu_1}, n_{\nu_2},\cdots, n_{\nu_i},\cdots|(b^{\dagger}_{\nu_i})^{\dagger}|n_{\nu_1}', n_{\nu_2}',\cdots, n_{\nu_i}',\cdots}^* &= \sqrt{n_{\nu_i}'}\delta_{n_{\nu_1}',n_{\nu_1}}\delta_{n_{\nu_2}',n_{\nu_2}}\cdots\delta_{n_{\nu_i}'-1,n_{\nu_i}}\cdots\nonumber\\
+	\Rightarrow \braket{n_{\nu_1}, n_{\nu_2},\cdots, n_{\nu_i},\cdots|b_{\nu_i}|n_{\nu_1}', n_{\nu_2}',\cdots, n_{\nu_i}',\cdots}^* &= \sqrt{n_{\nu_i}'}\braket{n_{\nu_1}, n_{\nu_2},\cdots, n_{\nu_i},\cdots|n_{\nu_1}', n_{\nu_2}',\cdots, n_{\nu_i}'-1,\cdots}^*.
+	\end{align}
+	Due to the arbitrariness of the states, one obtains the definition \ref{boson annihilation} of bosonic annihilation operator. Similar derivation can be carried out in case of fermionic operators.
+	
+	From the definitions of creation and annihilation operators, one obtains their (anti)commutation relations\footnote{It is great to refer to section 6.7, chapter 6 in Feynman's lectures. Here, Feynman uses the first quantization notations instead of occupation number representation.}
+	\begin{align}
+	&\text{commutation relations for bosons:}\qquad [b_{\nu_i},b^{\dagger}_{\nu_j}] = \delta_{i,j}, \quad [b_{\nu_i},b_{\nu_j}] = 0, \quad [b^{\dagger}_{\nu_i},b^{\dagger}_{\nu_j}] = 0.\\
+	&\text{anticommutation relations for fermions:}\qquad \{c_{\nu_i},c^{\dagger}_{\nu_j}\} = \delta_{i,j}, \quad \{c_{\nu_i},c_{\nu_j}\} = 0, \quad \{c^{\dagger}_{\nu_i},c^{\dagger}_{\nu_j}\} = 0.
+	\end{align}
+	
+	Since creation and annihilation operators correlate eigenstates of different numbers of particles, one can construct all basis states from the vacuum state $\ket{0}$ using creation operators
+	\begin{itemize}
+		\item Boson states:
+		\begin{empheq}[box={\codegraybox[5pt]}]{align}
+		\ket{n_{\nu_1},n_{\nu_2},\cdots} = \prod_{\nu_i}\left[\frac{1}{\sqrt{n_{\nu_i}!}}(b_{\nu_i}^{\dagger})^{n_{\nu_i}}\right]\ket{0}\label{bos}
+		\end{empheq}
+		\item Fermion states:
+		\begin{empheq}[box={\codegraybox[5pt]}]{align}
+		\ket{n_{\nu_1},n_{\nu_2},\cdots} = \left.\prod_{\nu_i}c_{\nu_i}^{\dagger}\ket{0}\right|_{\text{ordered}}\label{fer}
+		\end{empheq}
+	\end{itemize}
+	In principle, it is possible to obtain these formulas from the previous forms \ref{definition}. However, for simplicity, one introduces them here and will verify their consistency with the previous ones later.\bigbreak
+	\textit{Playing around with creation and annihilation operators:}
+	\begin{align*}
+	b^{\dagger}_{\nu_m}b_{\nu_n}\ket{n_{\nu_1},n_{\nu_2},\cdots} &= b^{\dagger}_{\nu_m}b_{\nu_n}\prod_{\nu_i}\left[\frac{1}{\sqrt{n_{\nu_i}!}}(b_{\nu_i}^{\dagger})^{n_{\nu_i}}\right]\ket{0}\\
+	&= \frac{1}{\sqrt{n_{\nu_1}!n_{\nu_2}!\cdots}}b^{\dagger}_{\nu_m}(b_{\nu_1}^{\dagger})^{n_{\nu_1}}(b_{\nu_2}^{\dagger})^{n_{\nu_2}}\cdots b_{\nu_n}(b_{\nu_n}^{\dagger})^{n_{\nu_n}}\cdots\ket{0}\\
+	&= \frac{1}{\sqrt{n_{\nu_1}!n_{\nu_2}!\cdots}}b^{\dagger}_{\nu_m}(b_{\nu_1}^{\dagger})^{n_{\nu_1}}(b_{\nu_2}^{\dagger})^{n_{\nu_2}}\cdots n_{\nu_n}(b_{\nu_n}^{\dagger})^{n_{\nu_n}-1}\cdots\ket{0}\\
+	&= \frac{\sqrt{n_{\nu_n}(n_{\nu_m}+1)}}{\sqrt{n_{\nu_1}!n_{\nu_2}!\cdots(n_{\nu_m}+1)!\cdots(n_{\nu_n}-1)!\cdots}}(b_{\nu_1}^{\dagger})^{n_{\nu_1}}(b_{\nu_2}^{\dagger})^{n_{\nu_2}}\cdots(b_{\nu_m}^{\dagger})^{n_{\nu_m}+1}\cdots(b_{\nu_n}^{\dagger})^{n_{\nu_n}-1}\cdots\ket{0}\\
+	&= \sqrt{(n_{\nu_m}+1)n_{\nu_n}}\ket{n_{\nu_1},\cdots,n_{\nu_m}+1,\cdots,n_{\nu_n}-1,\cdots}\quad (\nu_m\neq\nu_n).
+	\end{align*}
+	\subsubsection{Change of basis}
+	Until now one has been using only the basis set $\{\ket{\nu_i}\}$. The next task is to formulate the process of changing from one single-particle basis $\{\ket{\nu_i}\}$ to another $\{\ket{\tilde{\lambda}_i}\}$. Since this process applies to both fermionic and bosonic operators, one denotes creation and annihilation operators as $a^{\dagger}$ and $a$ for both cases. Their definitions are now both given as
+	\begin{eqnarray}
+	&a^{\dagger}_{\nu_i}\ket{n_{\nu_1}, n_{\nu_2},\cdots, n_{\nu_i},\cdots} = \sqrt{n_{\nu_i}+1}\ket{n_{\nu_1}, n_{\nu_2},\cdots, n_{\nu_i}+1,\cdots}& \\
+	&a_{\nu_i}\ket{n_{\nu_1}, n_{\nu_2},\cdots, n_{\nu_i},\cdots} = \sqrt{n_{\nu_i}}\ket{n_{\nu_1}, n_{\nu_2},\cdots, n_{\nu_i}-1,\cdots},&
+	\end{eqnarray}
+	by noticing that in case of fermions, $\ket{n_{\nu_1}, n_{\nu_2},\cdots, n_{\nu_i},\cdots}=0$ if $n_{\nu_i}>1$. Moreover, one also employs the notation $[,]_{\pm}$ in which $[,]_-$ stands for commutators and $[,]_+$ for anticommutators.\\
+	From the completeness relation $\sum_{\tilde{\lambda}_i}\ket{\tilde{\lambda}_i}\bra{\tilde{\lambda}_i}=\mathbf{1}$, one has
+	\begin{equation}
+	\ket{\nu_i} = \sum_{\tilde{\lambda}_k}\braket{\tilde{\lambda}_k|\nu_i}\ket{\tilde{\lambda}_k} \quad\Rightarrow\quad a^{\dagger}_{\nu_i}\ket{0} = \sum_{\tilde{\lambda}_k}\braket{\tilde{\lambda}_k|\nu_i} \tilde{a}^{\dagger}_{\lambda_k}\ket{0}.\nonumber
+	\end{equation}
+	\begin{empheq}[box={\codegraybox[5pt]}]{align}
+	\Rightarrow\quad a^{\dagger}_{\nu_i} = \sum_{\tilde{\lambda}_k}\braket{\tilde{\lambda}_k|\nu_i} \tilde{a}^{\dagger}_{\lambda_k} \quad\text{and}\quad a_{\nu_i} = \sum_{\tilde{\lambda}_k}\braket{\nu_i|\tilde{\lambda}_k} \tilde{a}_{\lambda_k}.\label{changebasis}
+	\end{empheq}
+	This transformation preserves the operator algebra
+	\begin{align}
+	&[\tilde{a}_{\lambda_k},\tilde{a}^{\dagger}_{\lambda_l}]_{\pm} = \sum_{\nu_i,\nu_j}\braket{\tilde{\lambda}_k|\nu_i}\braket{\nu_j|\tilde{\lambda}_l}[a_{\nu_i},a^{\dagger}_{\nu_j}]_{\pm} = \sum_{\nu_i,\nu_j}\braket{\tilde{\lambda}_k|\nu_i}\braket{\nu_j|\tilde{\lambda}_l}\delta_{i,j} = \sum_{\nu_i}\braket{\tilde{\lambda}_k|\nu_i}\braket{\nu_i|\tilde{\lambda}_l} = \delta_{k,l},\\
+	&[\tilde{a}_{\lambda_k},\tilde{a}_{\lambda_l}]_{\pm} = \sum_{\nu_i,\nu_j}\braket{\tilde{\lambda}_k|\nu_i}\braket{\tilde{\lambda}_l|\nu_j}[a_{\nu_i},a_{\nu_j}]_{\pm} = 0,\\
+	&[\tilde{a}^{\dagger}_{\lambda_k},\tilde{a}^{\dagger}_{\lambda_l}]_{\pm} = \sum_{\nu_i,\nu_j}\braket{\nu_i|\tilde{\lambda}_k}\braket{\nu_j|\tilde{\lambda}_l}[a^{\dagger}_{\nu_i},a^{\dagger}_{\nu_j}]_{\pm} = 0.
+	\end{align}
+	\textbf{Field operators:}\\
+	In case of a continuous set of quantum numbers, these quantum numbers are usually denoted by a bracket notation ($a_{\nu_i}\rightarrow a(\nu)$), and the summations translate to integrals. A typical and special example is the position (or real space) representation where one chooses the basis set to be the continuous set of position eigenstates $\ket{\vec{r}}$: note that in this case, creation and annihilation operators are called field operators and, according to the basis transformation rules, defined as
+	\begin{align}
+	\Psi^{\dagger}(\vec{r}) = \sum_{\nu_i}\braket{\nu_i|\vec{r}}a^{\dagger}_{\nu_i} = \sum_{\nu_i}\psi_{\nu_i}^*(\vec{r}) a^{\dagger}_{\nu_i}\\
+	\Psi(\vec{r}) = \sum_{\nu_i}\braket{\vec{r}|\nu_i}a_{\nu_i} = \sum_{\nu_i}\psi_{\nu_i}(\vec{r}) a_{\nu_i}.
+	\end{align}
+	Notice that $\Psi^{\dagger}(\vec{r})$ and $\Psi(\vec{r})$ are operators while the coefficients $\psi^{\dagger}_{\nu_i}(\vec{r})$ and $\psi_{\nu_i}(\vec{r})$ are the position representations of the basis states $\{\ket{\nu_i}\}$\footnote{Field operators are usually interpreted as creation or annihilation of a particle at a position $\vec{r}$. Since creation and annihilation operators are non-hermitian, I prefer to think of them as mere mathematical tools without considering their physical interpretations.}. The multiparticle basis states spanning the Fock space are given by
+	\begin{equation}
+	\ket{\vec{r}_1,\vec{r}_2,\cdots,\vec{r}_N} = \Psi^{\dagger}(\vec{r}_1)\Psi^{\dagger}(\vec{r}_2)\cdots\Psi^{\dagger}(\vec{r}_N)\ket{0}
+	\end{equation}
+	In this expression one does not use the occupation number representation due to the continuity of position eigenstates. Moreover, one notes that (creation) field operator at each state , i.e. each position, appears once since at a real-space position, there can always be 0 or 1 particle in both bosonic and fermionic cases. Hence, the normalization constant becomes 1. These operators obey the commutation relations\footnote{It is straightforward to prove this by using basis transformation rules.}
+	\begin{equation}
+	\left[\Psi(\vec{r}),\Psi^{\dagger}(\vec{r}')\right]_{\pm} = \delta^3(\vec{r}-\vec{r}'), \qquad \left[\Psi(\vec{r}),\Psi(\vec{r}')\right]_{\pm} = 0,\qquad \left[\Psi^{\dagger}(\vec{r}),\Psi^{\dagger}(\vec{r}')\right]_{\pm} = 0.
+	\end{equation}
+	\subsection{Operator}
+	\subsubsection{Representation}
+	First, one comes back to the equation \ref{eq:action} and rewrites it in the occupation number representation
+	\begin{align}
+	&\mathcal{O}^{(1)}\ket{n_{\nu_1},n_{\nu_2},\cdots} \nonumber\\
+	=& \sum_{\nu_m}\braket{\nu_m|o^{(1)}|\nu_m}n_{\nu_m}\ket{n_{\nu_1},n_{\nu_2},\cdots} + \sum_{\nu_m\neq\nu_n}\braket{\nu_m|o^{(1)}|\nu_n}\sqrt{(n_{\nu_m}+1)n_{\nu_n}}\ket{n_{\nu_1},\cdots,n_{\nu_m}+1,\cdots,n_{\nu_n}-1,\cdots}.
+	\end{align}
+	Then, one considers the action of creation and annihilation operators onto the multiparticle state $\ket{n_{\nu_1},n_{\nu_2},\cdots}$
+	\begin{align}
+	a^{\dagger}_{\nu_m}a_{\nu_n}\ket{n_{\nu_1},n_{\nu_2},\cdots} = a^{\dagger}_{\nu_m}\sqrt{n_{\nu_n}}\ket{n_{\nu_1},\cdots n_{\nu_n}-1,\cdots} = \sqrt{(n_{\nu_m}+1)n_{\nu_n}}\ket{n_{\nu_1},\cdots n_{\nu_m}+1,\cdots n_{\nu_n}-1,\cdots} (\nu_m\neq\nu_n)
+	\end{align}
+	\begin{equation}
+	a^{\dagger}_{\nu_m}a_{\nu_m}\ket{n_{\nu_1},n_{\nu_2},\cdots} = a^{\dagger}_{\nu_m}\sqrt{n_{\nu_m}}\ket{n_{\nu_1},\cdots n_{\nu_m}-1,\cdots} = n_{\nu_m}\ket{n_{\nu_1},\cdots n_{\nu_m},\cdots}.
+	\end{equation}
+	From these results, one sees that equation \ref{eq:action} can be simplified as
+	\begin{equation}
+	\mathcal{O}^{(1)}\ket{n_{\nu_1},n_{\nu_2},\cdots} = \sum_{\nu_m,\nu_n}\braket{\nu_m|o^{(1)}|\nu_n}a^{\dagger}_{\nu_m}a_{\nu_n}\ket{n_{\nu_1},n_{\nu_2},\cdots}.
+	\end{equation}
+	Owing to the arbitrariness of state $\ket{n_{\nu_1},n_{\nu_2},\cdots}$, one-body operators (acting on multiparticle states) are expressed neatly in terms of creation and annihilation operators as
+	\begin{empheq}[box={\codegraybox[5pt]}]{align}
+	\mathcal{O}^{(1)} = \sum_{\nu_m,\nu_n}o^{(1)}_{\nu_m\nu_n}a^{\dagger}_{\nu_m}a_{\nu_n},\quad \text{with }o^{(1)}_{\nu_m\nu_n} = \braket{\nu_m|o^{(1)}|\nu_n}.\label{def:1operator}
+	\end{empheq}
+	Similarly, two-body operators are given by
+	\begin{empheq}[box={\codegraybox[5pt]}]{align}
+	\mathcal{O}^{(2)} = \sum_{\nu_m,\nu_n,\nu_i,\nu_j}o^{(2)}_{\nu_m\nu_n\nu_i\nu_j}a^{\dagger}_{\nu_m}a^{\dagger}_{\nu_n}a_{\nu_i}a_{\nu_j},\quad\text{with }o^{(2)}_{\nu_m\nu_n\nu_i\nu_j} = (\bra{\nu_m}\otimes\bra{\nu_n})o^{(2)}(\ket{\nu_i}\otimes\ket{\nu_j}).\label{def:2operator}
+	\end{empheq}
+	In second quantization formalism, any operator is expressed as a linear combination of products of creation and annihilation operators weighted by matrix elements of that operator. Thus, a matrix element like $\braket{\nu_m|o^{(1)}|\nu_n}$ is usually regarded as representing a transition induced from the initial state $\ket{\nu_n}$ (annihilation) to the final state $\ket{\nu_m}$ (creation).
+	\subsubsection{Change of basis}
+	Now one applies the basis transformation formulas \ref{changebasis} to the operators
+	\begin{align}
+	\mathcal{O}^{(1)} = \sum_{\nu_m,\nu_n}o^{(1)}_{\nu_m\nu_n} \sum_{\tilde{\lambda}_l}\braket{\tilde{\lambda}_l|\nu_m} \tilde{a}^{\dagger}_{\lambda_l} \sum_{\tilde{\lambda}_k}\braket{\nu_n|\tilde{\lambda}_k} \tilde{a}_{\lambda_k} = \sum_{\tilde{\lambda}_l,\tilde{\lambda}_k}o^{(1)}_{\tilde{\lambda}_l\tilde{\lambda}_k}\tilde{a}^{\dagger}_{\lambda_l}\tilde{a}_{\lambda_k},
+	\end{align}
+	\begin{align}
+	\mathcal{O}^{(2)} &= \sum_{\nu_m,\nu_n,\nu_i,\nu_j}o^{(2)}_{\nu_m\nu_n\nu_i\nu_j}\sum_{\tilde{\lambda}_m}\braket{\tilde{\lambda}_m|\nu_m}\tilde{a}^{\dagger}_{\lambda_m}\sum_{\tilde{\lambda}_n}\braket{\tilde{\lambda}_n|\nu_n} \tilde{a}^{\dagger}_{\lambda_n}\sum_{\tilde{\lambda}_i}\braket{\nu_i|\tilde{\lambda}_i}\tilde{a}_{\lambda_i}\sum_{\tilde{\lambda}_j}\braket{\nu_j|\tilde{\lambda}_j} \tilde{a}_{\lambda_j}\\
+	&= \sum_{\tilde{\lambda}_m,\tilde{\lambda}_n,\tilde{\lambda}_i,\tilde{\lambda}_j}o^{(2)}_{\tilde{\lambda}_m\tilde{\lambda}_n\tilde{\lambda}_i\tilde{\lambda}_j}\tilde{a}^{\dagger}_{\lambda_m}\tilde{a}^{\dagger}_{\lambda_n}\tilde{a}_{\lambda_i}\tilde{a}_{\lambda_j}.
+	\end{align}
+	From these results, one sees that the basis transformation also preserves the form of operators' representation.\\
+	In case of continuous basis states, e.g. position representation, the operators take forms as
+	\begin{empheq}[box={\codegraybox[5pt]}]{align}
+	\mathcal{O}^{(1)} = \int d^3r_1d^3r_2\Psi^{\dagger}(\vec{r}_1)o^{(1)}(\vec{r}_1,\vec{r}_2)\Psi(\vec{r}_2),\quad \text{with }o^{(1)}(\vec{r}_1,\vec{r}_2) = \braket{\vec{r}_1|o^{(1)}|\vec{r}_2}
+	\end{empheq}
+	and
+	\begin{empheq}[box={\codegraybox[5pt]}]{align}
+	\mathcal{O}^{(2)} = \int d^3r_1d^3r_2d^3r_3d^3r_4\Psi^{\dagger}(\vec{r}_1)\Psi^{\dagger}(\vec{r}_2)&o^{(2)}(\vec{r}_1,\vec{r}_2,\vec{r}_3,\vec{r}_4)\Psi(\vec{r}_3)\Psi(\vec{r}_4)\nonumber\\
+	\text{with }&o^{(2)}(\vec{r}_1,\vec{r}_2,\vec{r}_3,\vec{r}_4) = (\bra{\vec{r}_1}\otimes\bra{\vec{r}_2})o^{(2)}(\ket{\vec{r}_3}\otimes\ket{\vec{r}_4}).
+	\end{empheq}
+	\subsubsection{Come back to the single-particle basis states - Adding spin}
+	\begin{center}
+		\textbf{Disclaimer:} \textit{This part is especially based on my own knowledge and conjectures. I cannot find any reference for it.}\\
+		\textit{It is great for me to discuss this topic more.}
+	\end{center}
+	The number of quantum numbers (NQN) to describe a system is equal to its number of degrees of freedom (NDF). For instance, a particle moving in 3D-space has three degrees of freedom, and thus there are three quantum numbers representing its states. If the particle is free, its complete set of quantum numbers is $\ket{\nu}=\ket{k_x,k_y,k_z}$. If the particle is the electron of a hydrogen atom, its complete set is $\ket{\nu}=\ket{n,l,m}$. If the particle is moving in a constant magnetic field, the corresponding set of quantum numbers is $\ket{\nu}=\ket{n,k_y,k_z}$ (Landau gauge) or $\ket{\nu}=\ket{n,m,k_z}$ (symmetric gauge). On the other hand, if one takes the particles' spin degrees of freedom into account but has it independent from the basis set $\{\ket{\nu}\}$, then state of a particle is characterized by two quantum numbers: $\nu$ and $\sigma$ (one chooses $\sigma$ to be the spin projection onto $z$-axis). Hence, one needs to redefine the creation and annihilation operators as $a^{\dagger}_{\nu_i\sigma_i}$ and $a_{\nu_i\sigma_i}$. However, since the basis set $\{\ket{\nu}\}$ is still complete, the basis transformation is now written as
+	\begin{equation}
+	a^{\dagger}_{\nu_i\sigma} = \sum_{\tilde{\lambda}_k}\braket{\tilde{\lambda}_k|\nu_i} \tilde{a}^{\dagger}_{\lambda_k\sigma} \quad\text{and}\quad a_{\nu_i\sigma} = \sum_{\tilde{\lambda}_k}\braket{\nu_i|\tilde{\lambda}_k} \tilde{a}_{\lambda_k\sigma}.
+	\end{equation}
+	Then, the representations of operators in second quantization \ref{def:1operator} and \ref{def:2operator} are now given as
+	\begin{empheq}[box={\codegraybox[5pt]}]{align}
+	\mathcal{O}^{(1)} = \sum_{\substack{\nu_m,\nu_n\\ \sigma_m,\sigma_n}}o^{(1)}_{\nu_m\sigma_m\nu_n\sigma_n}a^{\dagger}_{\nu_m\sigma_m}a_{\nu_n\sigma_n},\quad \text{with }o^{(1)}_{\nu_m\sigma_m\nu_n\sigma_n} = \braket{\nu_m\sigma_m|o^{(1)}|\nu_n\sigma_n}\label{def:1operatorspin}
+	\end{empheq}
+	and
+	\begin{empheq}[box={\codegraybox[5pt]}]{align}
+	\mathcal{O}^{(2)} = \sum_{\substack{\nu_m,\nu_n,\nu_i,\nu_j\\ \sigma_m,\sigma_n,\sigma_i,\sigma_j}}o^{(2)}_{\substack{\nu_m\nu_n\nu_i\nu_j\\ \sigma_m\sigma_n\sigma_i\sigma_j}}a^{\dagger}_{\nu_m\sigma_m}a^{\dagger}_{\nu_n\sigma_n}a_{\nu_i\sigma_i}a_{\nu_j\sigma_j},\quad\text{with }o^{(2)}_{\substack{\nu_m\nu_n\nu_i\nu_j\\ \sigma_m\sigma_n\sigma_i\sigma_j}} = (\bra{\nu_m\sigma_m}\otimes\bra{\nu_n\sigma_n})o^{(2)}(\ket{\nu_i\sigma_i}\otimes\ket{\nu_j\sigma_j}).\label{def:2operatorspin}
+	\end{empheq}
+	In a particular case of field operators, one has
+	\begin{align}
+	\Psi^{\dagger}_{\sigma}(\vec{r}) = \sum_{\nu_i}\psi_{\nu_i}^*(\vec{r}) a^{\dagger}_{\nu_i\sigma},\qquad\Psi_{\sigma}(\vec{r}) = \sum_{\nu_i}\psi_{\nu_i}(\vec{r}) a_{\nu_i\sigma}.
+	\end{align}
+	and
+	\begin{eqnarray}
+	&\mathcal{O}^{(1)} = \displaystyle\sum_{\sigma_1,\sigma_2}\int d^3r_1d^3r_2 o^{(1)}_{\sigma_1\sigma_2}(\vec{r}_1,\vec{r}_2)\Psi^{\dagger}_{\sigma_1}(\vec{r}_1)\Psi_{\sigma_2}(\vec{r}_2)&\\
+	&\mathcal{O}^{(2)} = \displaystyle\sum_{\substack{\sigma_1,\sigma_2\\ \sigma_3,\sigma_4}}\int d^3r_1d^3r_2d^3r_3d^3r_4 o^{(2)}_{\substack{\sigma_1\sigma_2\\ \sigma_3\sigma_4}}(\vec{r}_1,\vec{r}_2,\vec{r}_3,\vec{r}_4)\Psi^{\dagger}_{\sigma_1}(\vec{r}_1)\Psi^{\dagger}_{\sigma_2}(\vec{r}_2)\Psi_{\sigma_3}(\vec{r}_3)\Psi_{\sigma_4}(\vec{r}_4).&
+	\end{eqnarray}
+	Notice that if the spin degree of freedom contributes to the basis set, e.g. $\ket{\nu}=\ket{n,j,m_j,m_l,m_s}$, then one uses the definitions \ref{changebasis}. However, from now on, one only considers the former case where the basis states do not include the coupling between $\ket{\nu}$ and $\ket{s,\sigma}$.
+	\subsection{More on field operators}
+	In some textbooks on condensed matter field theory, many formulas of field operators are introduced without explicit explanation. In this section, one derives some properties of fermionic field operators, and also verifies the consistency of definition \ref{fer} with \ref{definition}. It is completely similar for the case of bosonic systems. For simplicity, one suppresses the spin degree of freedom.\\
+	Basis transformation rules give
+	\begin{equation}
+	c_{\nu} = \int d^3r\psi_{\nu}^*(\vec{r})\Psi(\vec{r}),\qquad c^{\dagger}_{\nu} = \int d^3r\psi_{\nu}(\vec{r})\Psi^{\dagger}(\vec{r}).
+	\end{equation}
+	Inserting the latter expression into the multiparticle state $\ket{n_{\nu_1},n_{\nu_2},\cdots} = c^{\dagger}_{\nu_1}c^{\dagger}_{\nu_2}\cdots c^{\dagger}_{\nu_N}\ket{0}$ yields
+	\begin{align}
+	\ket{n_{\nu_1},n_{\nu_2},\cdots} &= \int d^3r_1\psi_{\nu_1}(\vec{r}_1)\Psi^{\dagger}(\vec{r}_1)\int d^3r_2\psi_{\nu_2}(\vec{r}_2)\Psi^{\dagger}(\vec{r}_2)\cdots\int d^3r_N\psi_{\nu_N}(\vec{r}_N)\Psi^{\dagger}(\vec{r}_N)\ket{0}\\
+	&= \int d^3r_1d^3r_2\cdots d^3r_N\underbrace{\psi_{\nu_1}(\vec{r}_1)\psi_{\nu_2}(\vec{r}_2)\cdots\psi_{\nu_N}(\vec{r}_N)}_{\psi_{\nu_1\nu_2\cdots\nu_N}(\vec{r}_1,\vec{r}_2,\cdots,\vec{r}_N)}\Psi^{\dagger}(\vec{r}_1)\Psi^{\dagger}(\vec{r}_2)\cdots\Psi^{\dagger}(\vec{r}_N)\ket{0}\\
+	&= \int d^3r_1d^3r_2\cdots d^3r_N\psi_{\nu_1\nu_2\cdots\nu_N}(\vec{r}_1,\vec{r}_2,\cdots,\vec{r}_N)\ket{\vec{r}_1,\vec{r}_2,\cdots,\vec{r}_N}.\label{compare}
+	\end{align}
+	This identity appears in some textbooks but there are two different versions. To obtain the second one, one now determines the projection of a multiparticle state onto the coordinates basis. First, one has
+	\begin{equation}
+	\{\Psi(\vec{r}),c^{\dagger}_{\nu_i}\} = \left\lbrace\sum_{\nu}\psi_{\nu}(\vec{r})c_{\nu},c^{\dagger}_{\nu_i}\right\rbrace = \psi_{\nu_i}(\vec{r})\left\lbrace c_{\nu_i},c^{\dagger}_{\nu_i}\right\rbrace = \psi_{\nu_i}(\vec{r}).
+	\end{equation}
+	Using this relation, one considers the action of a field operator onto an antisymmetric state $\ket{\psi^A_{\nu_1\nu_2\cdots\nu_N}}\equiv\ket{n_{\nu_1},n_{\nu_2},\cdots}$
+	\begin{align}
+	\Psi(\vec{r})c^{\dagger}_{\nu_1}c^{\dagger}_{\nu_2}\cdots c^{\dagger}_{\nu_N}\ket{0} &= \psi_{\nu_1}(\vec{r})c^{\dagger}_{\nu_2}c^{\dagger}_{\nu_3}\cdots c^{\dagger}_{\nu_N}\ket{0} - c^{\dagger}_{\nu_1}\Psi(\vec{r})c^{\dagger}_{\nu_2}\cdots c^{\dagger}_{\nu_N}\ket{0}\\
+	&= \psi_{\nu_1}(\vec{r})c^{\dagger}_{\nu_2}c^{\dagger}_{\nu_3}\cdots c^{\dagger}_{\nu_N}\ket{0} - \psi_{\nu_2}(\vec{r})c^{\dagger}_{\nu_1}c^{\dagger}_{\nu_3}\cdots c^{\dagger}_{\nu_N}\ket{0} + c^{\dagger}_{\nu_1}c^{\dagger}_{\nu_2}\Psi(\vec{r})\cdots c^{\dagger}_{\nu_N}\ket{0}\\
+	&= \psi_{\nu_1}(\vec{r})c^{\dagger}_{\nu_2}c^{\dagger}_{\nu_3}\cdots c^{\dagger}_{\nu_N}\ket{0} - \psi_{\nu_2}(\vec{r})c^{\dagger}_{\nu_1}c^{\dagger}_{\nu_3}\cdots c^{\dagger}_{\nu_N}\ket{0} +\cdots \pm c^{\dagger}_{\nu_1}c^{\dagger}_{\nu_2}\cdots c^{\dagger}_{\nu_N}\underbrace{\Psi(\vec{r})\ket{0}}_{0}\\
+	&= \sum_{\nu_i}(-1)^{i+1}\psi_{\nu_i}(\vec{r})c^{\dagger}_{\nu_1}c^{\dagger}_{\nu_2}\cdots(\text{no }c^{\dagger}_{\nu_i})\cdots c^{\dagger}_{\nu_N}\ket{0}.
+	\end{align}
+	Applying two field operators onto the state gives
+	\begin{align}
+	\Psi(\vec{r}_2)\Psi(\vec{r}_1)c^{\dagger}_{\nu_1}c^{\dagger}_{\nu_2}\cdots c^{\dagger}_{\nu_N}\ket{0} &= \sum_{\nu_i}(-1)^{i+1}\psi_{\nu_i}(\vec{r}_1)\Psi(\vec{r}_2)c^{\dagger}_{\nu_1}c^{\dagger}_{\nu_2}\cdots(\text{no }c^{\dagger}_{\nu_i})\cdots c^{\dagger}_{\nu_N}\ket{0}\\
+	&= \sum_{\nu_i}(-1)^{i+1}\psi_{\nu_i}(\vec{r}_1)\sum_{\nu_j\neq\nu_i}(-1)^{j+1}\psi_{\nu_j}(\vec{r}_2)c^{\dagger}_{\nu_1}c^{\dagger}_{\nu_2}\cdots(\text{no }c^{\dagger}_{\nu_i},c^{\dagger}_{\nu_j})\cdots c^{\dagger}_{\nu_N}\ket{0}.
+	\end{align}
+	From these results, one can deduce that
+	\begin{align}
+	\Psi(\vec{r}_1)\Psi(\vec{r}_2)\cdots\Psi(\vec{r}_N)c^{\dagger}_{\nu_1}c^{\dagger}_{\nu_2}\cdots c^{\dagger}_{\nu_N}\ket{0} &= \sum_{\mathcal{P}}(-1)^P\psi_{\nu_{P1}}(\vec{r}_1)\psi_{\nu_{P2}}(\vec{r}_2)\cdots\psi_{\nu_{PN}}(\vec{r}_N)\ket{0} \\
+	&= \sqrt{N!}\psi^A_{\nu_1\nu_2\cdots\nu_N}(\vec{r}_1,\vec{r}_2,\cdots,\vec{r}_N)\ket{0}.
+	\end{align}
+	Hence, the position representation of state $\ket{\psi_{\nu_1\nu_2\cdots\nu_N}^{S/A}}$ reads
+	\begin{align}
+	\braket{\vec{r}_1,\vec{r}_2,\cdots,\vec{r}_N|\psi_{\nu_1\nu_2\cdots\nu_N}^{S/A}} = \bra{0}\Psi(\vec{r}_1)\Psi(\vec{r}_2)\cdots\Psi(\vec{r}_N)c^{\dagger}_{\nu_1}c^{\dagger}_{\nu_2}\cdots c^{\dagger}_{\nu_N}\ket{0} = \sqrt{N!}\psi^A_{\nu_1\nu_2\cdots\nu_N}(\vec{r}_1,\vec{r}_2,\cdots,\vec{r}_N)
+	\end{align}
+	which is consistent with the result \ref{random} obtained by using the definition \ref{definition}. Next, one employs the completeness relation of coordinates basis states to express the multiparticle state
+	\begin{align}
+	\ket{n_{\nu_1},n_{\nu_2},\cdots} &= \frac{1}{N!}\int d^3r_1d^3r_2\cdots d^3r_N \ket{\vec{r}_1,\vec{r}_2,\cdots,\vec{r}_N}\braket{\vec{r}_1,\vec{r}_2,\cdots,\vec{r}_N|n_{\nu_1,n_{\nu_2},\cdots}}\\
+	&= \frac{1}{\sqrt{N!}}\int d^3r_1d^3r_2\cdots d^3r_N\psi^A_{\nu_1\nu_2\cdots\nu_N}(\vec{r}_1,\vec{r}_2,\cdots,\vec{r}_N)\ket{\vec{r}_1,\vec{r}_2,\cdots,\vec{r}_N}.
+	\end{align}
+	\begin{mdframed}[backgroundcolor=gray!16]
+		\textbf{Discussion:}\begin{center}
+			\begin{minipage}{42em}
+				Here, I rewrite the two versions of expressing the multiparticle state for comparison although I have not clearly understood the physical roles they play
+				\begin{equation}
+				\boxed{\ket{n_{\nu_1},n_{\nu_2},\cdots} = \left\lbrace\begin{array}{rcl}
+					\displaystyle\int d^3r_1d^3r_2\cdots d^3r_N\psi_{\nu_1\nu_2\cdots\nu_N}(\vec{r}_1,\vec{r}_2,\cdots,\vec{r}_N)\ket{\vec{r}_1,\vec{r}_2,\cdots,\vec{r}_N}\\
+					\dfrac{1}{\sqrt{N!}}\displaystyle\int d^3r_1d^3r_2\cdots d^3r_N\psi^A_{\nu_1\nu_2\cdots\nu_N}(\vec{r}_1,\vec{r}_2,\cdots,\vec{r}_N)\ket{\vec{r}_1,\vec{r}_2,\cdots,\vec{r}_N}
+					\end{array}\right.}
+				\end{equation}
+				In my opinion, the multiparticle state in the upper expression is restricted to belong to the basis set while the lower one can present any multiparticle state by defining $\braket{\vec{r}_1,\vec{r}_2,\cdots,\vec{r}_N|n_{\nu_1},n_{\nu_2},\cdots} = \sqrt{N!}\psi^A_{\nu_1\nu_2\cdots\nu_N}(\vec{r}_1,\vec{r}_2,\cdots,\vec{r}_N)$. 
+			\end{minipage}
+		\end{center}
+	\end{mdframed}
+	\subsubsection*{Density operator}
+	Next, one considers the action of $\rho(\vec{r}) = \Psi^{\dagger}(\vec{r})\Psi(\vec{r})$ onto a multiparticle position eigenstate $\ket{\vec{r}_1,\vec{r}_2,\cdots\vec{r}_N}$
+	\begin{align}
+	\rho(\vec{r})\ket{\vec{r}_1,\vec{r}_2,\cdots\vec{r}_N} &= \Psi^{\dagger}(\vec{r})\Psi(\vec{r})\Psi^{\dagger}(\vec{r}_1)\Psi^{\dagger}(\vec{r}_2)\cdots\Psi^{\dagger}(\vec{r}_N)\ket{0}\\
+	&= \delta^3(\vec{r}-\vec{r}_1)\Psi^{\dagger}(\vec{r})\Psi^{\dagger}(\vec{r}_2)\cdots\Psi^{\dagger}(\vec{r}_N)\ket{0} - \Psi^{\dagger}(\vec{r})\Psi^{\dagger}(\vec{r}_1)\Psi(\vec{r})\Psi^{\dagger}(\vec{r}_2)\cdots\Psi^{\dagger}(\vec{r}_N)\ket{0}\\
+	&= \sum^N_{i=1} (-1)^{i-1}\delta^3(\vec{r}-\vec{r}_i)\Psi^{\dagger}(\vec{r})\Psi^{\dagger}(\vec{r}_1)\Psi^{\dagger}(\vec{r}_2)\cdots(\text{without }\Psi^{\dagger}(\vec{r}_i))\cdots\Psi^{\dagger}(\vec{r}_N)\ket{0}\\
+	&= \sum^N_{i=1} \delta^3(\vec{r}-\vec{r}_i)\Psi^{\dagger}(\vec{r}_1)\Psi^{\dagger}(\vec{r}_2)\underbrace{\cdots\Psi^{\dagger}(\vec{r})\cdots}_{i^{th}\text{ posistion}}\Psi^{\dagger}(\vec{r}_N)\ket{0}\\
+	&= \sum^N_{i=1} \delta^3(\vec{r}-\vec{r}_i)\ket{\vec{r}_1,\vec{r}_2,\cdots\vec{r}_N}\qquad (\text{Since } \delta(x-x')f(x)=f(x')).
+	\end{align}
+	When acting on state $\ket{\vec{r}_1,\vec{r}_2,\cdots\vec{r}_N}$, $\rho(\vec{r})$ has the form of a density function of particles in real space: $\rho(\vec{r}) = \delta^3(\vec{r}-\vec{r}_i)$. However, when acting on a general multiparticle state, it does not have such simple form, and one has to use the definition $\rho(\vec{r}) = \Psi^{\dagger}(\vec{r})\Psi(\vec{r})$\footnote{If one takes spin into account, the definition of density operator is $\rho(\vec{r}) = \sum_{\sigma}\Psi^{\dagger}_{\sigma}(\vec{r})\Psi_{\sigma}(\vec{r})$}.
+	\subsection{Some specific operators}
+	In this section, one writes some familiar operators in the second quantization formalism using formulas \ref{def:1operatorspin} and \ref{def:2operatorspin}. Here, one works in two particular representations: discrete states $\{\ket{\nu}\}$ and position $\{\ket{\vec{r}}\}$.
+	\subsubsection{Number operator}
+	One considers \ref{def:1operatorspin} with $o^{(1)}=\mathbf{1}^{(1)}$, then one has $o^{(1)}_{\nu_i\nu_j}=\delta_{\nu_i,\nu_j}$ and $\braket{\vec{r}|o^{(1)}|\vec{r}'} = \delta^3(\vec{r}-\vec{r}')$. Consequently,
+	\begin{equation}
+	\mathcal{O}^{(1)} = \sum_{\nu_i,\sigma}a^{\dagger}_{\nu_i\sigma}a_{\nu_i\sigma} = \sum_{\sigma}\int d^3r \Psi^{\dagger}_{\sigma}(\vec{r})\Psi_{\sigma}(\vec{r}) = \mathcal{N}.
+	\end{equation}
+	This operator $\mathcal{N}$ is called \textit{number operator}, whose eigenvalue $N$ is the total number of particles of the system
+	\begin{align}
+	\mathcal{N}\ket{n_{\nu_1},n_{\nu_2},\cdots} = \sum_{\nu_i,\sigma}a^{\dagger}_{\nu_i\sigma}a_{\nu_i\sigma}\ket{n_{\nu_1},n_{\nu_2},\cdots} = \sum_{\nu_i,\sigma}n_{\nu_i\sigma}\ket{n_{\nu_1},n_{\nu_2},\cdots} = N\ket{n_{\nu_1},n_{\nu_2},\cdots}
+	\end{align}
+	\begin{align}
+	\mathcal{N}\ket{\vec{r}_1,\vec{r}_2,\cdots\vec{r}_N} &= \sum_{\sigma}\int d^3r \Psi^{\dagger}_{\sigma}(\vec{r})\Psi_{\sigma}(\vec{r})\ket{\vec{r}_1,\vec{r}_2,\cdots\vec{r}_N} \\ &= \sum_{\sigma}\int d^3r \Psi^{\dagger}_{\sigma}(\vec{r})\Psi_{\sigma}(\vec{r})\sum^N_{i=1} \delta_{\sigma,\sigma_i}\delta^3(\vec{r}-\vec{r}_i)\ket{\vec{r}_1,\vec{r}_2,\cdots\vec{r}_N} \\ &= N\ket{\vec{r}_1,\vec{r}_2,\cdots\vec{r}_N}.
+	\end{align}
+	Since a general multiparticle state can be expressed as a superposition of basis states $\ket{n_{\nu_1},n_{\nu_2},\cdots}$ or $\ket{\vec{r}_1,\vec{r}_2,\cdots\vec{r}_N}$, the same thing happens when the number operator acts on that state.
+	\subsubsection{One-body Hamiltonian}
+	Usually, the Hamiltonian describing a system includes two terms: one-body Hamiltonian and two-body interaction. First one considers the one-body term, which governs the independent motion of particles. Using identity \ref{def:1operatorspin} one can obtain a general form of one-body Hamiltonian
+	\begin{equation}
+	\boxed{\mathcal{H}^{(1)} = \sum_{\substack{\nu_m,\nu_n\\ \sigma_m,\sigma_n}}\mathcal{E}_{\nu_m\sigma_m\nu_n\sigma_n}a^{\dagger}_{\nu_m\sigma_m}a_{\nu_n\sigma_n},\quad \text{with }\mathcal{E}_{\nu_m\sigma_m\nu_n\sigma_n} = \braket{\nu_m\sigma_m|\mathcal{H}^{(1)}|\nu_n\sigma_n}}.\label{h1}
+	\end{equation}
+	In coordinate representation, the single-particle Hamiltonian matrix element is
+	\begin{equation}
+	\braket{\vec{r}\sigma|h^{(1)}|\vec{r}'\sigma'} = \braket{\vec{r}\sigma|\frac{p^2}{2m}|\vec{r}'\sigma'} + \braket{\vec{r}\sigma|V|\vec{r}'\sigma'} = -\frac{1}{2m}\nabla^2\delta^3(\vec{r}-\vec{r}')\delta_{\sigma,\sigma'} + V(\vec{r})\delta^3(\vec{r}-\vec{r}')\delta_{\sigma,\sigma'}.
+	\end{equation}
+	Hence, the corresponding multiparticle Hamiltonian is given by
+	\begin{empheq}[box={\codegraybox[5pt]}]{align}
+	\mathcal{H}^{(1)} &= \sum_{\sigma,\sigma'}\int d^3rd^3r'\left[-\frac{1}{2m}\nabla^2\delta^3(\vec{r}-\vec{r}') + V(\vec{r})\delta^3(\vec{r}-\vec{r}')\right]\delta_{\sigma,\sigma'}\Psi^{\dagger}_{\sigma}(\vec{r})\Psi_{\sigma'}(\vec{r}')\\
+	&= \sum_{\sigma}\int d^3r \left[\frac{1}{2m}\nabla\Psi^{\dagger}_{\sigma}(\vec{r})\nabla\Psi_{\sigma}(\vec{r}) + V(\vec{r})\Psi^{\dagger}_{\sigma}(\vec{r})\Psi_{\sigma}(\vec{r})\right]\\
+	&= \sum_{\sigma}\int d^3r \Psi^{\dagger}_{\sigma}(\vec{r})\left[-\frac{1}{2m}\nabla^2+V(\vec{r})\right]\Psi_{\sigma}(\vec{r}).
+	\end{empheq}
+	\subsubsection{Two-body Hamiltonian}
+	The second term in the Hamiltonian represents two-body interaction between particles. Completely similar to the previous section, by using identity \ref{def:2operatorspin} one also obtains the general form of two-body Hamiltonian
+	\begin{align}
+	\boxed{\mathcal{H}^{(2)} = \sum_{\substack{\nu_m,\nu_n,\nu_i,\nu_j\\ \sigma_m,\sigma_n,\sigma_i,\sigma_j}}U_{\substack{\nu_m\nu_n\nu_i\nu_j\\ \sigma_m\sigma_n\sigma_i\sigma_j}}a^{\dagger}_{\nu_m\sigma_m}a^{\dagger}_{\nu_n\sigma_n}a_{\nu_i\sigma_i}a_{\nu_j\sigma_j},\quad\text{with }U_{\substack{\nu_m\nu_n\nu_i\nu_j\\ \sigma_m\sigma_n\sigma_i\sigma_j}} = (\bra{\nu_m\sigma_m}\otimes\bra{\nu_n\sigma_n})U(\ket{\nu_i\sigma_i}\otimes\ket{\nu_j\sigma_j}).}\label{h2}
+	\end{align}
+	In position representation, the matrix element of this two-body interaction is\footnote{Actually, I have not figured out the origin of the factor $\frac{1}{2}$ yet but I feel quite lazy to think now.}
+	\begin{equation}
+	(\bra{\vec{r}_1\sigma_1}\otimes\bra{\vec{r}_2\sigma_2})U(\ket{\vec{r}_3\sigma_3}\otimes\ket{\vec{r}_4\sigma_4}) = \frac{1}{2} U(\vec{r}_1-\vec{r}_2)\delta^3(\vec{r}_1-\vec{r}_4)\delta^3(\vec{r}_2-\vec{r}_3)\delta_{\sigma_1,\sigma_4}\delta_{\sigma_2,\sigma_3}
+	\end{equation}
+	and thus, the multiparticle Hamiltonian reads
+	\begin{empheq}[box={\codegraybox[5pt]}]{align}
+	\mathcal{H}^{(2)} = \frac{1}{2}\sum_{\sigma_1,\sigma_2}\int d^3r_1d^3r_2 \Psi^{\dagger}_{\sigma_1}(\vec{r}_1)\Psi^{\dagger}_{\sigma_2}(\vec{r}_2)U(\vec{r}_1-\vec{r}_2)\Psi_{\sigma_2}(\vec{r}_2)\Psi_{\sigma_1}(\vec{r}_1).
+	\end{empheq}
+	The total Hamiltonian can now be written as
+	\begin{align}
+	\mathcal{H} &= \mathcal{H}^{(1)} + \mathcal{H}^{(2)}\nonumber\\
+	&= \sum_{\substack{\nu_m,\nu_n\\ \sigma_m,\sigma_n}}\mathcal{E}_{\nu_m\sigma_m\nu_n\sigma_n}a^{\dagger}_{\nu_m\sigma_m}a_{\nu_n\sigma_n} + \sum_{\substack{\nu_m,\nu_n,\nu_i,\nu_j\\ \sigma_m,\sigma_n,\sigma_i,\sigma_j}}U_{\substack{\nu_m\nu_n\nu_i\nu_j\\ \sigma_m\sigma_n\sigma_i\sigma_j}}a^{\dagger}_{\nu_m\sigma_m}a^{\dagger}_{\nu_n\sigma_n}a_{\nu_i\sigma_i}a_{\nu_j\sigma_j}\\
+	&= \sum_{\sigma}\int d^3r \Psi^{\dagger}_{\sigma}(\vec{r})\left[-\frac{1}{2m}\nabla^2+V(\vec{r})\right]\Psi_{\sigma}(\vec{r}) + \frac{1}{2}\sum_{\sigma_1,\sigma_2}\int d^3r_1d^3r_2 \Psi^{\dagger}_{\sigma_1}(\vec{r}_1)\Psi^{\dagger}_{\sigma_2}(\vec{r}_2)U(\vec{r}_1-\vec{r}_2)\Psi_{\sigma_2}(\vec{r}_2)\Psi_{\sigma_1}(\vec{r}_1).
+	\end{align}
+	\subsubsection{Spin operator}
+	One considers \ref{def:1operatorspin} in case of spin operator: $o^{(1)} = s^i = \frac{\hbar}{2}\sigma^i$ with $i=x,y,z$. Then, since one uses eigenstates of $s^z$ as basis states, the matrix elements are given by
+	\begin{align}
+	o^{(1)}_{\nu_1\sigma_1\nu_2\sigma_2} = \braket{\nu_1|\nu_2}\braket{\sigma_1|s^i|\sigma_2} = \delta_{\nu_1,\nu_2}s^i_{\sigma_1\sigma_2}.
+	\end{align}
+	As a result, the multiparticle spin operator is
+	\begin{equation}
+	\boxed{S^i = \sum_{\nu,\sigma_1,\sigma_2}s^i_{\sigma_1\sigma_2}a^{\dagger}_{\nu\sigma_1}a_{\nu\sigma_2}},
+	\end{equation}
+	which, in particular, gives
+	\begin{align}
+	S^x = \frac{1}{2} \sum_{\nu}\left(a^{\dagger}_{\nu\uparrow}a_{\nu\downarrow} + a^{\dagger}_{\nu\downarrow}a_{\nu\uparrow}\right),\qquad S^y = \frac{1}{2i} \sum_{\nu}\left(a^{\dagger}_{\nu\uparrow}a_{\nu\downarrow} - a^{\dagger}_{\nu\downarrow}a_{\nu\uparrow}\right),\qquad S^z = \frac{1}{2} \sum_{\nu}\left(a^{\dagger}_{\nu\uparrow}a_{\nu\uparrow} - a^{\dagger}_{\nu\downarrow}a_{\nu\downarrow}\right).
+	\end{align}
+	Notice that in some cases, e.g. magnon, the basis set $\{\ket{\nu}\}$ is chosen to be the spin states $\{\ket{\sigma}\}$ and thus there would be no summation over $\nu$\footnote{If the basis set includes spin states, e.g. $\ket{\mu}=\ket{n,j,m_j,m_l,m_s}$, think later.}.
+	\subsubsection{Spin interaction operator}
+	
+	\subsection{Equation of motion}
+	Finally, one mentions briefly the time dependence of creation and annihilation operators in Heisenberg quantum picture where second quantization formalism works effectively. The temporal evolution of annihilation operator is governed by Heisenberg equation
+	\begin{equation}
+	-i\hbar\frac{da_{\nu\sigma}}{dt} =  \left[\mathcal{H},a_{\nu\sigma}\right] = \left[\mathcal{H}^{(1)},a_{\nu\sigma}\right] + \left[\mathcal{H}^{(2)},a_{\nu\sigma}\right].
+	\end{equation}
+	Here, one again divides the Hamiltonian into two terms: one-body $\mathcal{H}^{(1)}$ and two-body $\mathcal{H}^{(2)}$. Inserting the Hamiltonian \ref{h1} into the first commutator gives
+	\begin{align}
+	\left[\mathcal{H}^{(1)},a_{\nu\sigma}\right] = \sum_{\substack{\nu_m,\nu_n\\ \sigma_m,\sigma_n}}\mathcal{E}_{\nu_m\sigma_m\nu_n\sigma_n}\left[a^{\dagger}_{\nu_m\sigma_m}a_{\nu_n\sigma_n},a_{\nu\sigma}\right] = \sum_{\substack{\nu_m,\nu_n\\ \sigma_m,\sigma_n}}\mathcal{E}_{\nu_m\sigma_m\nu_n\sigma_n}\left[ a^{\dagger}_{\nu_m\sigma_m}\left\lbrace a_{\nu_n\sigma_n},a_{\nu\sigma}\right\rbrace - \left\lbrace a^{\dagger}_{\nu_m\sigma_m},a_{\nu\sigma}\right\rbrace a_{\nu_n\sigma_n}\right]
+	\end{align}
+	\begin{itemize}
+		\item Fermionic operator:
+		\begin{align}
+		\left[\mathcal{H}^{(1)},c_{\nu\sigma}\right] = -\sum_{\substack{\nu_m,\nu_n\\ \sigma_m,\sigma_n}}\mathcal{E}_{\nu_m\sigma_m\nu_n\sigma_n}\delta_{\nu_m,\nu}\delta_{\sigma_m,\sigma}c_{\nu_n\sigma_n} = -\sum_{\nu_n,\sigma_n}\mathcal{E}_{\nu\sigma\nu_n\sigma_n}c_{\nu_n\sigma_n}.
+		\end{align}
+		\item Bosonic operator:
+		\begin{align}
+		\left[\mathcal{H}^{(1)},b_{\nu\sigma}\right] = \sum_{\substack{\nu_m,\nu_n\\ \sigma_m,\sigma_n}}\mathcal{E}_{\nu_m\sigma_m\nu_n\sigma_n}\left[ b^{\dagger}_{\nu_m\sigma_m} 2b_{\nu\sigma}b_{\nu_n\sigma_n} - \left(2b^{\dagger}_{\nu_m\sigma_m}b_{\nu\sigma} + \delta_{\nu_m,\nu}\delta_{\sigma_m,\sigma}\right)b_{\nu_n\sigma_n}\right] = -\sum_{\nu_n,\sigma_n}\mathcal{E}_{\nu\sigma\nu_n\sigma_n}b_{\nu_n\sigma_n}
+		\end{align}
+	\end{itemize}
+	\begin{equation}
+	\Longrightarrow \left[\mathcal{H}^{(1)},a_{\nu\sigma}\right] = -\sum_{\nu_n,\sigma_n}\mathcal{E}_{\nu\sigma\nu_n\sigma_n}a_{\nu_n\sigma_n}.
+	\end{equation}
+	Analogously, substituting the two-body Hamiltonian \ref{h2} into the second commutator gives
+	\begin{align}
+	\left[\mathcal{H}^{(2)},a_{\nu\sigma}\right] &= \sum_{\substack{\nu_m,\nu_n,\nu_i,\nu_j\\ \sigma_m,\sigma_n,\sigma_i,\sigma_j}}U_{\substack{\nu_m\nu_n\nu_i\nu_j\\ \sigma_m\sigma_n\sigma_i\sigma_j}}\left[a^{\dagger}_{\nu_m\sigma_m}a^{\dagger}_{\nu_n\sigma_n}a_{\nu_i\sigma_i}a_{\nu_j\sigma_j},a_{\nu\sigma}\right]\\
+	&= \sum_{\substack{\nu_m,\nu_n,\nu_i,\nu_j\\ \sigma_m,\sigma_n,\sigma_i,\sigma_j}}U_{\substack{\nu_m\nu_n\nu_i\nu_j\\ \sigma_m\sigma_n\sigma_i\sigma_j}}\left[a^{\dagger}_{\nu_m\sigma_m}a^{\dagger}_{\nu_n\sigma_n}\{a_{\nu_i\sigma_i}a_{\nu_j\sigma_j},a_{\nu\sigma}\} - \{a^{\dagger}_{\nu_m\sigma_m}a^{\dagger}_{\nu_n\sigma_n},a_{\nu\sigma}\}a_{\nu_i\sigma_i}a_{\nu_j\sigma_j}\right]
+	\end{align}
+	\begin{align}
+	a^{\dagger}_{\nu_m\sigma_m}a^{\dagger}_{\nu_n\sigma_n}\{a_{\nu_i\sigma_i}a_{\nu_j\sigma_j},a_{\nu\sigma}\} &= a^{\dagger}_{\nu_m\sigma_m}a^{\dagger}_{\nu_n\sigma_n}a_{\nu_i\sigma_i}\{a_{\nu_j\sigma_j},a_{\nu\sigma}\} + a^{\dagger}_{\nu_m\sigma_m}a^{\dagger}_{\nu_n\sigma_n}[a_{\nu\sigma},a_{\nu_i\sigma_i}]a_{\nu_j\sigma_j}\\
+	&= 2b^{\dagger}_{\nu_m\sigma_m}b^{\dagger}_{\nu_n\sigma_n}b_{\nu_i\sigma_i}b_{\nu\sigma}b_{\nu_j\sigma_j}\quad\text{ or }\quad 2c^{\dagger}_{\nu_m\sigma_m}c^{\dagger}_{\nu_n\sigma_n}c_{\nu\sigma}c_{\nu_i\sigma_i}c_{\nu_j\sigma_j}\\
+	&= 2a^{\dagger}_{\nu_m\sigma_m}a^{\dagger}_{\nu_n\sigma_n}a_{\nu\sigma}a_{\nu_i\sigma_i}a_{\nu_j\sigma_j}\\
+	\{a^{\dagger}_{\nu_m\sigma_m}a^{\dagger}_{\nu_n\sigma_n},a_{\nu\sigma}\}a_{\nu_i\sigma_i}a_{\nu_j\sigma_j} &= a^{\dagger}_{\nu_m\sigma_m}\{a^{\dagger}_{\nu_n\sigma_n},a_{\nu\sigma}\}a_{\nu_i\sigma_i}a_{\nu_j\sigma_j} + [a_{\nu\sigma},a^{\dagger}_{\nu_m\sigma_m}]a^{\dagger}_{\nu_n\sigma_n}a_{\nu_i\sigma_i}a_{\nu_j\sigma_j}\\
+	&= 2b^{\dagger}_{\nu_m\sigma_m}b_{\nu\sigma}b^{\dagger}_{\nu_n\sigma_n}b_{\nu_i\sigma_i}b_{\nu_j\sigma_j} - \delta_{\nu_n,\nu}\delta_{\sigma_n,\sigma}b^{\dagger}_{\nu_m\sigma_m}b_{\nu_i\sigma_i}b_{\nu_j\sigma_j} + \delta_{\nu_m,\nu}\delta_{\sigma_m,\sigma}b^{\dagger}_{\nu_n\sigma_n}b_{\nu_i\sigma_i}b_{\nu_j\sigma_j}\nonumber\\
+	\text{or}\quad& -\delta_{\nu_n,\nu}\delta_{\sigma_n,\sigma}c^{\dagger}_{\nu_m\sigma_m}c_{\nu_i\sigma_i}c_{\nu_j\sigma_j} - 2c^{\dagger}_{\nu_m\sigma_m}c_{\nu\sigma}c^{\dagger}_{\nu_n\sigma_n}c_{\nu_i\sigma_i}c_{\nu_j\sigma_j} + \delta_{\nu_m,\nu}\delta_{\sigma_m,\sigma}c^{\dagger}_{\nu_n\sigma_n}c_{\nu_i\sigma_i}c_{\nu_j\sigma_j}\\
+	&= 2\zeta a^{\dagger}_{\nu_m\sigma_m}a_{\nu\sigma}a^{\dagger}_{\nu_n\sigma_n}a_{\nu_i\sigma_i}a_{\nu_j\sigma_j} - \delta_{\nu_n,\nu}\delta_{\sigma_n,\sigma}a^{\dagger}_{\nu_m\sigma_m}a_{\nu_i\sigma_i}a_{\nu_j\sigma_j} + \delta_{\nu_m,\nu}\delta_{\sigma_m,\sigma}a^{\dagger}_{\nu_n\sigma_n}a_{\nu_i\sigma_i}a_{\nu_j\sigma_j}
+	\end{align}
+	\begin{align}
+	\Longrightarrow \left[\mathcal{H}^{(2)},a_{\nu\sigma}\right] &= -\sum_{\substack{\nu_m,\nu_n,\nu_i,\nu_j\\ \sigma_m,\sigma_n,\sigma_i,\sigma_j}}U_{\substack{\nu_m\nu_n\nu_i\nu_j\\ \sigma_m\sigma_n\sigma_i\sigma_j}}\left(\delta_{\nu_n,\nu}\delta_{\sigma_n,\sigma}a^{\dagger}_{\nu_m\sigma_m}a_{\nu_i\sigma_i}a_{\nu_j\sigma_j} + \delta_{\nu_m,\nu}\delta_{\sigma_m,\sigma}a^{\dagger}_{\nu_n\sigma_n}a_{\nu_i\sigma_i}a_{\nu_j\sigma_j}\right)\\
+	&= - \sum_{\substack{\nu_n,\nu_i,\nu_j\\ \sigma_n,\sigma_i,\sigma_j}}\left(U_{\substack{\nu_n\nu\nu_i\nu_j\\ \sigma_n\sigma\sigma_i\sigma_j}}a^{\dagger}_{\nu_n\sigma_n}a_{\nu_i\sigma_i}a_{\nu_j\sigma_j} + U_{\substack{\nu\nu_n\nu_i\nu_j\\ \sigma\sigma_n\sigma_i\sigma_j}}a^{\dagger}_{\nu_n\sigma_n}a_{\nu_i\sigma_i}a_{\nu_j\sigma_j}\right).
+	\end{align}
+	Combining all the results obtained, one gets
+	\begin{empheq}[box={\codegraybox[5pt]}]{align}
+	i\hbar\frac{da_{\nu\sigma}}{dt} = \sum_{\nu_n,\sigma_n}\mathcal{E}_{\nu\sigma\nu_n\sigma_n}a_{\nu_n\sigma_n} + \sum_{\substack{\nu_n,\nu_i,\nu_j\\ \sigma_n,\sigma_i,\sigma_j}}\left(U_{\substack{\nu_n\nu\nu_i\nu_j\\ \sigma_n\sigma\sigma_i\sigma_j}}a^{\dagger}_{\nu_n\sigma_n}a_{\nu_i\sigma_i}a_{\nu_j\sigma_j} + U_{\substack{\nu\nu_n\nu_i\nu_j\\ \sigma\sigma_n\sigma_i\sigma_j}}a^{\dagger}_{\nu_n\sigma_n}a_{\nu_i\sigma_i}a_{\nu_j\sigma_j}\right),
+	\end{empheq}
+	whose expression in terms of field operators reads
+	\begin{equation}
+	i\hbar\frac{\partial\Psi_{\sigma}(\vec{r},t)}{\partial t} = \left(-\frac{1}{2m}\nabla^2 + V(\vec{r})\right)\Psi_{\sigma}(\vec{r},t) + \sum_{\sigma'}\int d^3r' U(\vec{r}-\vec{r}')\Psi^{\dagger}_{\sigma}(\vec{r}',t)\Psi_{\sigma'}(\vec{r}',t)\Psi^{\dagger}_{\sigma}(\vec{r},t).
+	\end{equation}
+	The evolution equations of the field operators are intrinsically nonlinear when the interparticle interaction is present.
+	\section{Systems of different particles}
+	%\part{Applications of Second Quantization}	
+	
+\end{document}
